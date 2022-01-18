@@ -32,13 +32,13 @@ module Fastlane
         #####################################################
   
         def self.description
-          "A short description with <= 80 characters of what this action does"
+          "Ensures Android changelogs to be within limits"
         end
   
         def self.details
           # Optional:
           # this is your chance to provide a more detailed description of this action
-          "You can use this action to do cool things..."
+          "Stops lane excecution if there are any Android changelogs longer than Google Play limits"
         end
   
         def self.available_options
