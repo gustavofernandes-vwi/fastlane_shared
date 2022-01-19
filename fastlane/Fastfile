@@ -1,0 +1,137 @@
+private_lane :flutter_version_values do
+    version_info = flutter_version(pubspec_location: './pubspec.yaml')
+    Actions.lane_context['FLUTTER_VERSION_NAME'] = version_info['version_name']
+    Actions.lane_context['FLUTTER_VERSION_CODE'] = version_info['version_code']
+end
+
+desc "Exibe o código e nome de versão atual do app, conforme pubspec.yaml"
+lane :version do
+    println(message: Actions.lane_context['FLUTTER_VERSION_NAME'])
+    println(message: Actions.lane_context['FLUTTER_VERSION_CODE'])
+end
+
+desc "Cria os arquivos de changelog para serem preenchidos"
+desc "O conteúdo desses arquivos serão usados na hora de subir as builds"
+lane :create_changelog_files do
+    FileUtils.touch ios_changelog
+    FileUtils.touch android_changelog
+    FileUtils.touch github_changelog
+end
+
+private_lane :ensure_release_branch do
+    version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
+    expected_branch = "release/#{version_name}"
+    ensure_git_branch(branch: expected_branch)
+end
+
+private_lane :commit_generated_files do
+    git_commit(
+        path: [
+            "pubspec.lock",
+            "ios/OneSignalNotificationServiceExtension/Info.plist",
+            "ios/Podfile.lock",
+            "macos/Flutter/GeneratedPluginRegistrant.swift",
+        ],
+        message: "Build generated files",
+        allow_nothing_to_commit: true,
+    )
+end
+
+private_lane :discard_git_changes do
+    reset_git_repo(
+        skip_clean: true,
+        disregard_gitignore: false,
+    )
+end
+
+desc "Gera as builds **Beta** para ambas as plataformas e faz upload para as ferramentas de distribuição correspondentes."
+desc "Também cria a release no GitHub e gera builds executáveis (apk do android) para anexar na release."
+desc "Esta é a lane de mais alto nível, que chama outras lanes para que tudo que precisa ser feito aconteça com um único comando."
+desc "O tempo de execução dessa lane é altamente elevado."
+lane :beta_all do |options|
+    skip_ios = options[:skip_ios] || false
+    skip_android = options[:skip_android] || false
+    skip_github = options[:skip_github] || false
+
+    check_changelogs
+    UI.message File.read(android_changelog)
+
+    ensure_release_branch
+
+    if !skip_android
+        ensure_android_changelog_limit
+    end
+
+    if !skip_ios
+        # Build for iOS and upload to AppStore Connect
+        Fastlane::LaneManager.cruise_lane('ios','beta')
+        commit_generated_files
+    end
+    
+    if !skip_android
+        # Build for Android and upload to Google Play Console
+        Fastlane::LaneManager.cruise_lane('android','beta')
+        commit_generated_files
+    end
+    
+    if !skip_github
+        # Build executables (android apk) and uploads to newly created github release
+        beta_github_release
+        commit_generated_files
+    end
+end
+
+desc "Gera as builds de **produção** para ambas as plataformas e faz upload para as ferramentas de distribuição correspondentes."
+desc "Também cria a release no GitHub e gera builds executáveis (apk do android) para anexar na release."
+desc "Esta é a lane de mais alto nível, que chama outras lanes para que tudo que precisa ser feito aconteça com um único comando."
+desc "O tempo de execução dessa lane é altamente elevado."
+lane :prod_all do |options|
+    skip_ios = options[:skip_ios] || false
+    skip_android = options[:skip_android] || false
+    skip_github = options[:skip_github] || false
+
+    ensure_release_branch
+
+    if !skip_android
+        ensure_android_changelog_limit
+    end
+
+    if !skip_ios
+        # Build for iOS and upload to AppStore Connect
+        Fastlane::LaneManager.cruise_lane('ios','prod')
+        commit_generated_files
+    end
+    
+    if !skip_android
+        # Build for Android and upload to Google Play Console
+        Fastlane::LaneManager.cruise_lane('android','prod')
+        commit_generated_files
+    end
+    
+    if !skip_github
+        # Build executables (android apk) and uploads to newly created github release
+        prod_github_release
+        commit_generated_files
+    end
+end
+
+desc "Gera as builds **alpha** para ambas as plataformas e faz upload para as ferramentas de distribuição correspondentes."
+desc "As builds são numeradas automaticamente de acordo com o último commit e também são liberadas automaticamente"
+lane :alpha_all do |options|
+    skip_ios = options[:skip_ios] || false
+    skip_android = options[:skip_android] || false
+
+    ensure_git_branch(branch: 'master')
+
+    if !skip_ios
+        # Build for iOS and upload to AppStore Connect
+        Fastlane::LaneManager.cruise_lane('ios','alpha')
+        discard_git_changes
+    end
+    
+    if !skip_android
+        # Build for Android and upload to Google Play Console
+        Fastlane::LaneManager.cruise_lane('android','alpha')
+        discard_git_changes
+    end
+end
