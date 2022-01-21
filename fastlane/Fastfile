@@ -6,16 +6,17 @@ end
 
 desc "Exibe o código e nome de versão atual do app, conforme pubspec.yaml"
 lane :version do
-    println(message: Actions.lane_context['FLUTTER_VERSION_NAME'])
-    println(message: Actions.lane_context['FLUTTER_VERSION_CODE'])
+    UI.message Actions.lane_context['FLUTTER_VERSION_NAME']
+    UI.message Actions.lane_context['FLUTTER_VERSION_CODE']
 end
 
 desc "Cria os arquivos de changelog para serem preenchidos"
 desc "O conteúdo desses arquivos serão usados na hora de subir as builds"
 lane :create_changelog_files do
-    FileUtils.touch ios_changelog
-    FileUtils.touch android_changelog
-    FileUtils.touch github_changelog
+    changelog(
+        skip_character_limit_check: true,
+        skip_outdated_changelogs_check: true,
+    )
 end
 
 private_lane :ensure_release_branch do
@@ -45,15 +46,12 @@ private_lane :discard_git_changes do
 end
 
 private_lane :check_changelogs do |options|
-    ios = ios_changelog.clone
-    android = android_changelog.clone
-    github = github_changelog.clone
-    changelog_files = []
-    changelog_files << ios.sub!('./', './fastlane/') unless (options[:skip_ios] || false)
-    changelog_files << android.sub!('./', './fastlane/') unless (options[:skip_android] || false)
-    changelog_files << github.sub!('./', './fastlane/') unless (options[:skip_github] || false)
-
-    check_updated_changelogs(files: changelog_files, limit: 5)
+    changelogs(
+        skip_create_files: true,
+        skip_ios: options[:skip_ios],
+        skip_android: options[:skip_android],
+        skip_github: options[:skip_github],
+    )
 end
 
 desc "Gera as builds **Beta** para ambas as plataformas e faz upload para as ferramentas de distribuição correspondentes."

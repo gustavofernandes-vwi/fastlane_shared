@@ -8,19 +8,22 @@ module Fastlane
         def self.run(params)
           params.load_configuration_file("Changelogfile")
           create_files params if (!params[:skip_create_files])
-          ensure_android_limit params if (!params[:skip_character_limit_check])
+          ensure_character_limit params if (!params[:skip_character_limit_check])
           check_outdated_changelogs params if (!params[:skip_outdated_changelogs_check])
+          Actions.lane_context['CHANGELOG_IOS_FILE'] = params[:ios_file]
+          Actions.lane_context['CHANGELOG_ANDROID_FILE'] = params[:android_file]
+          Actions.lane_context['CHANGELOG_GITHUB_FILE'] = params[:github_file]
           nil
         end
 
         def self.create_files(params)
-          FileUtils.touch params[:ios_changelog_file] if (!params[:skip_ios] && !File.exists?(params[:ios_changelog_file]))
-          FileUtils.touch params[:android_changelog_file] if (!params[:skip_android] && !File.exists?(params[:android_changelog_file]))
-          FileUtils.touch params[:github_changelog_file] if (!params[:skip_github] && !File.exists?(params[:github_changelog_file]))
+          FileUtils.touch params[:ios_file] if (!params[:skip_ios] && !File.exists?(params[:ios_file]))
+          FileUtils.touch params[:android_file] if (!params[:skip_android] && !File.exists?(params[:android_file]))
+          FileUtils.touch params[:github_file] if (!params[:skip_github] && !File.exists?(params[:github_file]))
           UI.message "Created changelog files (if not already created)"
         end
 
-        def self.ensure_android_limit(params)
+        def self.ensure_character_limit(params)
           limit = params[:character_limit]
           callback = lambda do |changelog|
             if File.read(changelog).length > limit then
@@ -35,13 +38,13 @@ module Fastlane
           time_limit = params[:outdated_limit]
           files = []
 
-          files << params[:ios_changelog_file] unless params[:skip_ios]
-          files << params[:android_changelog_file] unless params[:skip_android]
-          files << params[:github_changelog_file] unless params[:skip_github]
+          files << params[:ios_file] unless params[:skip_ios]
+          files << params[:android_file] unless params[:skip_android]
+          files << params[:github_file] unless params[:skip_github]
           walk_android_changelogs(
             params,
             lambda do |changelog|
-              files << params[:android_changelog_file]
+              files << params[:android_file]
             end
           )
   
@@ -142,21 +145,21 @@ module Fastlane
               default_value: './fastlane/metadata/android',
             ),
             FastlaneCore::ConfigItem.new(
-              key: :android_changelog_file,
-              env_name: "CHANGELOG_ANDROID_FILE",
-              description: "Android changelog file",
-              optional: true,
-              default_value: './fastlane/metadata/android/pt-BR/changelogs/default.txt',
-            ),
-            FastlaneCore::ConfigItem.new(
-              key: :ios_changelog_file,
+              key: :ios_file,
               env_name: "CHANGELOG_IOS_FILE",
               description: "iOS changelog file",
               optional: true,
               default_value: './fastlane/metadata/ios/changelog.md',
             ),
             FastlaneCore::ConfigItem.new(
-              key: :github_changelog_file,
+              key: :android_file,
+              env_name: "CHANGELOG_ANDROID_FILE",
+              description: "Android changelog file",
+              optional: true,
+              default_value: './fastlane/metadata/android/pt-BR/changelogs/default.txt',
+            ),
+            FastlaneCore::ConfigItem.new(
+              key: :github_file,
               env_name: "CHANGELOG_GITHUB_FILE",
               description: "github changelog file",
               optional: true,
