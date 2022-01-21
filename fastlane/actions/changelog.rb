@@ -6,6 +6,7 @@ module Fastlane
   
       class ChangelogAction < Action
         def self.run(params)
+          params.load_configuration_file("Changelogfile")
           create_files params if (!params[:skip_create_files])
           ensure_android_limit params if (!params[:skip_character_limit_check])
           check_outdated_changelogs params if (!params[:skip_outdated_changelogs_check])
