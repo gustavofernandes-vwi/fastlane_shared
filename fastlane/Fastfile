@@ -145,3 +145,245 @@ lane :alpha_all do |options|
         discard_git_changes
     end
 end
+
+desc "Cria a release no GitHub e gera builds executáveis (apk do android) para anexar na release."
+lane :beta_github_release do
+    Fastlane::LaneManager.cruise_lane('android','beta_for_github')
+
+    version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
+    version_code = Actions.lane_context['FLUTTER_VERSION_CODE']
+    add_git_tag(
+        includes_lane: false,
+        prefix: "v",
+        build_number: version_name,
+        postfix: "-beta.#{version_code}"
+    )
+    push_git_tags
+
+    set_github_release(
+        name: "Release #{version_name} - beta (build #{version_code})",
+        repository_name: 'vivaintra/vivaintra_app2',
+        api_token: ENV['GITHUB_TOKEN'],
+        is_draft: true,
+        is_prerelease: true,
+        upload_assets: Actions.lane_context['GITHUB_RELEASE_ASSETS'],
+        commitish: "release/#{version_name}",
+        tag_name: last_git_tag,
+        description: (File.read(Actions.lane_context['CHANGELOG_GITHUB_FILE']) rescue "_No changelog provided_"),
+    )
+end
+
+desc "Cria a release no GitHub e gera builds executáveis (apk do android) para anexar na release."
+lane :prod_github_release do
+    Fastlane::LaneManager.cruise_lane('android','prod_for_github')
+
+    version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
+    version_code = Actions.lane_context['FLUTTER_VERSION_CODE']
+    add_git_tag(
+        includes_lane: false,
+        prefix: "v",
+        build_number: version_name,
+    )
+    push_git_tags
+
+    set_github_release(
+        name: "Release #{version_name}",
+        repository_name: 'vivaintra/vivaintra_app2',
+        api_token: ENV['GITHUB_TOKEN'],
+        is_draft: true,
+        upload_assets: Actions.lane_context['GITHUB_RELEASE_ASSETS'],
+        commitish: "release/#{version_name}",
+        tag_name: last_git_tag,
+        description: (File.read(Actions.lane_context['CHANGELOG_GITHUB_FILE']) rescue "_No changelog provided_"),
+    )
+end
+
+platform :ios do
+
+    desc "Gera a build **beta** do iOS e faz upload para o AppStore Connect (TestFlight)"
+    lane :beta do
+        ensure_release_branch
+        flutter_build(build_args: ["--flavor=beta"])
+        gym(
+            workspace: 'ios/Runner.xcworkspace',
+            scheme: 'beta',
+            clean: true,
+            export_method: "app-store",
+            export_xcargs: "-allowProvisioningUpdates",
+        )
+        pilot(
+            # skip_submission: true,
+            skip_waiting_for_build_processing: true,
+            username: ENV['APPSTORE_CONNECT_USERNAME'],
+            changelog: (File.read(Actions.lane_context['CHANGELOG_IOS_FILE']) rescue ""),
+        )
+    end
+
+    desc "Gera a build de **produção** do iOS e faz upload para o AppStore Connect (TestFlight)"
+    lane :prod do
+        ensure_release_branch
+        flutter_build(build_args: ["--flavor=prod"])
+        gym(
+            workspace: 'ios/Runner.xcworkspace',
+            scheme: 'prod',
+            clean: true,
+            export_method: "app-store",
+            export_xcargs: "-allowProvisioningUpdates",
+        )
+        pilot(
+            # skip_submission: true,
+            skip_waiting_for_build_processing: true,
+            username: ENV['APPSTORE_CONNECT_USERNAME'],
+            changelog: (File.read(Actions.lane_context['CHANGELOG_IOS_FILE']) rescue ""),
+        )
+    end
+
+    lane :alpha do
+        UI.message Actions.lane_context['CHANGELOG_GITHUB_FILE']
+        ensure_git_branch(branch: 'master')
+
+        date = lastCommitDateTIme
+        version_name = '0.0.1'
+        version_code = dateTimeToUtcTimestamp(date)
+
+        flutter_build(
+            build_args: ["--flavor=alpha"],
+            build_number: version_code,
+            build_name: version_name,
+        )
+        gym(
+            workspace: 'ios/Runner.xcworkspace',
+            scheme: 'alpha',
+            clean: true,
+            export_method: "app-store",
+            export_xcargs: "-allowProvisioningUpdates",
+        )
+        pilot(
+            # skip_submission: true,
+            # skip_waiting_for_build_processing: true,
+            username: ENV['APPSTORE_CONNECT_USERNAME'],
+            distribute_external: true,
+            app_version: version_name,
+            build_number: "#{version_code}",
+            groups: ['Devs'],
+            changelog: 'Sem informações sobre essa versão no momento',
+        )
+    end
+end
+
+platform :android do
+
+    desc "Gera o appbundle do **beta** para Android e faz upload para o Google Play Console"
+    lane :beta do
+        ensure_android_changelog_limit
+        ensure_release_branch
+        begin
+            flutter_build(build: 'appbundle')
+        rescue => exception
+            raise exception unless exception.message.include?('Gradle build failed to produce an .aab file. It\'s likely that this file was generated under')
+            UI.important(exception.message)
+        end
+        version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
+        version_code = Actions.lane_context['FLUTTER_VERSION_CODE']
+        supply(
+            track: 'internal',
+            aab: './build/app/outputs/bundle/betaRelease/app-beta-release.aab',
+            release_status: 'draft',
+            version_name: "#{version_code} (#{version_name})",
+        )
+    end
+
+    desc "Gera o appbundle da **produção** para Android"
+    lane :prod do
+        ensure_android_changelog_limit
+        ensure_release_branch
+        begin
+            flutter_build(build: 'appbundle')
+        rescue => exception
+            raise exception unless exception.message.include?('Gradle build failed to produce an .aab file. It\'s likely that this file was generated under')
+            UI.important(exception.message)
+        end
+        version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
+        version_code = Actions.lane_context['FLUTTER_VERSION_CODE']
+        supply(
+            aab: './build/app/outputs/bundle/prodRelease/app-prod-release.aab',
+            release_status: 'draft',
+            version_name: "#{version_code} (#{version_name})",
+        )
+    end
+
+    lane :alpha do
+        ensure_android_changelog_limit
+        ensure_git_branch(branch: 'master')
+
+        date = lastCommitDateTIme
+        version_name = '0.0.1'
+        version_code = dateTimeToUtcTimestamp(date)
+        begin
+            flutter_build(
+                build: 'appbundle',
+                build_number: version_code,
+                build_name: version_name,
+            )
+        rescue => exception
+            raise exception unless exception.message.include?('Gradle build failed to produce an .aab file. It\'s likely that this file was generated under')
+            UI.important(exception.message)
+        end
+
+        File.delete("./metadata/android/pt-BR/changelogs/#{version_code}.txt")
+        File.touch("./metadata/android/pt-BR/n/#{version_code}.txt")
+        File.write(
+            "./metadata/android/pt-BR/changelogs/#{version_code}.txt",
+            'Sem informações sobre essa versão no momento',
+        )
+
+        supply(
+            track: 'internal',
+            aab: './build/app/outputs/bundle/alphaRelease/app-alpha-release.aab',
+            release_status: 'completed',
+            version_name: "#{version_code} (#{version_name})",
+        )
+
+        File.delete("./metadata/android/pt-BR/changelogs/#{version_code}.txt")
+    end
+
+    lane :beta_for_github do
+        ensure_release_branch
+        begin
+            flutter_build(build: 'apk')
+        rescue => exception
+            raise exception unless exception.message.include?('Gradle build failed to produce an .apk file. It\'s likely that this file was generated under')
+            UI.important(exception.message)
+        end
+        Actions.lane_context['GITHUB_RELEASE_ASSETS'] << "#{android_apk_folder}/app-beta-release.apk"
+    end
+
+    lane :prod_for_github do
+        ensure_release_branch
+        begin
+            flutter_build(build: 'apk')
+        rescue => exception
+            raise exception unless exception.message.include?('Gradle build failed to produce an .apk file. It\'s likely that this file was generated under')
+            UI.important(exception.message)
+        end
+        Actions.lane_context['GITHUB_RELEASE_ASSETS'] << "#{android_apk_folder}/app-prod-release.apk"
+    end
+end
+
+def dateTimeToUtcTimestamp(date)
+    signal = date.strftime("%z")[0, 1]
+    hours_offset = date.strftime("%z")[1, 2].to_i
+    timestamp_offset = hours_offset * 60 * 60
+    case signal
+    when "-"
+        return date.to_time.to_i + timestamp_offset
+    when "+"
+        return date.to_time.to_i - timestamp_offset
+    end
+end
+
+def lastCommitDateTIme
+    git_log = `git log -n1 --pretty="%ci"`
+    git_log = git_log.strip
+    return DateTime.strptime(git_log, "%Y-%m-%d %H:%M:%S %z")
+end
