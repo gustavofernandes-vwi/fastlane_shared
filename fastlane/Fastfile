@@ -165,7 +165,7 @@ lane :beta_github_release do
 
     set_github_release(
         name: "Release #{version_name} - beta (build #{version_code})",
-        repository_name: 'vivaintra/vivaintra_app2',
+        repository_name: ENV['REPOSITORY_NAME'],
         api_token: ENV['GITHUB_TOKEN'],
         is_draft: true,
         is_prerelease: true,
@@ -191,7 +191,7 @@ lane :prod_github_release do
 
     set_github_release(
         name: "Release #{version_name}",
-        repository_name: 'vivaintra/vivaintra_app2',
+        repository_name: ENV['REPOSITORY_NAME'],
         api_token: ENV['GITHUB_TOKEN'],
         is_draft: true,
         upload_assets: Actions.lane_context['GITHUB_RELEASE_ASSETS'],
