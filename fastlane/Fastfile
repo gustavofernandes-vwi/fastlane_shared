@@ -332,8 +332,9 @@ platform :android do
             UI.important(exception.message)
         end
 
+        File.touch("./metadata/android/pt-BR/changelogs/#{version_code}.txt")
         File.delete("./metadata/android/pt-BR/changelogs/#{version_code}.txt")
-        File.touch("./metadata/android/pt-BR/n/#{version_code}.txt")
+        File.touch("./metadata/android/pt-BR/changelogs/#{version_code}.txt")
         File.write(
             "./metadata/android/pt-BR/changelogs/#{version_code}.txt",
             'Sem informações sobre essa versão no momento',
