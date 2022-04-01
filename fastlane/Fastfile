@@ -29,14 +29,15 @@ private_lane :ensure_release_branch do
 end
 
 private_lane :commit_generated_files do
+    files = [
+        "pubspec.lock",
+        "ios/OneSignalNotificationServiceExtension/Info.plist",
+        "ios/Podfile.lock",
+        "macos/Flutter/GeneratedPluginRegistrant.swift",
+    ]
     begin
         git_commit(
-            path: [
-                "pubspec.lock",
-                "ios/OneSignalNotificationServiceExtension/Info.plist",
-                "ios/Podfile.lock",
-                "macos/Flutter/GeneratedPluginRegistrant.swift",
-            ],
+            path: files.filter(|file| File.exist?(file)),
             message: "Build generated files",
             allow_nothing_to_commit: true,
         )
