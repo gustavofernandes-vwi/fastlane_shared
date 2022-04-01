@@ -37,7 +37,7 @@ private_lane :commit_generated_files do
     ]
     begin
         git_commit(
-            path: files.filter(|file| File.exist?(file)),
+            path: files.filter {|file| File.exist?(file) },
             message: "Build generated files",
             allow_nothing_to_commit: true,
         )
