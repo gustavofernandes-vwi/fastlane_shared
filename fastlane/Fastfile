@@ -176,7 +176,7 @@ lane :beta_github_release do
         upload_assets: Actions.lane_context['GITHUB_RELEASE_ASSETS'],
         commitish: "release/#{version_name}",
         tag_name: last_git_tag,
-        description: (File.read(Actions.lane_context['CHANGELOG_GITHUB_FILE']) rescue "_No changelog provided_"),
+        description: (File.read(Actions.lane_context['CHANGELOG_GITHUB_FILE'].sub! './fastlane/', '') rescue "_No changelog provided_"),
     )
 end
 
@@ -201,7 +201,7 @@ lane :prod_github_release do
         upload_assets: Actions.lane_context['GITHUB_RELEASE_ASSETS'],
         commitish: "release/#{version_name}",
         tag_name: last_git_tag,
-        description: (File.read(Actions.lane_context['CHANGELOG_GITHUB_FILE']) rescue "_No changelog provided_"),
+        description: (File.read(Actions.lane_context['CHANGELOG_GITHUB_FILE'].sub! './fastlane/', '') rescue "_No changelog provided_"),
     )
 end
 
@@ -222,7 +222,7 @@ platform :ios do
             # skip_submission: true,
             skip_waiting_for_build_processing: true,
             username: ENV['APPSTORE_CONNECT_USERNAME'],
-            changelog: (File.read(Actions.lane_context['CHANGELOG_IOS_FILE']) rescue ""),
+            changelog: (File.read(Actions.lane_context['CHANGELOG_IOS_FILE'].sub! './fastlane/', '') rescue ""),
         )
     end
 
@@ -241,12 +241,11 @@ platform :ios do
             # skip_submission: true,
             skip_waiting_for_build_processing: true,
             username: ENV['APPSTORE_CONNECT_USERNAME'],
-            changelog: (File.read(Actions.lane_context['CHANGELOG_IOS_FILE']) rescue ""),
+            changelog: (File.read(Actions.lane_context['CHANGELOG_IOS_FILE'].sub! './fastlane/', '') rescue ""),
         )
     end
 
     lane :alpha do
-        UI.message Actions.lane_context['CHANGELOG_GITHUB_FILE']
         ensure_git_branch(branch: 'master')
 
         date = lastCommitDateTIme
