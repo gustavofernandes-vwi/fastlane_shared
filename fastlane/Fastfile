@@ -17,6 +17,7 @@ desc "Cria os arquivos de changelog para serem preenchidos"
 desc "O conteúdo desses arquivos serão usados na hora de subir as builds"
 lane :create_changelog_files do
     changelog(
+        skip_create_files: false,
         skip_character_limit_check: true,
         skip_outdated_changelogs_check: true,
     )
@@ -55,7 +56,6 @@ end
 
 private_lane :check_changelogs do |options|
     changelog(
-        skip_create_files: true,
         skip_ios: options[:skip_ios],
         skip_android: options[:skip_android],
         skip_github: options[:skip_github],
@@ -71,7 +71,7 @@ lane :beta_all do |options|
     skip_android = options[:skip_android] || false
     skip_github = options[:skip_github] || false
 
-    check_changelogs
+    check_changelogs(options)
     ensure_release_branch
 
     if !skip_android
@@ -106,7 +106,7 @@ lane :prod_all do |options|
     skip_android = options[:skip_android] || false
     skip_github = options[:skip_github] || false
 
-    check_changelogs
+    check_changelogs(options)
     ensure_release_branch
 
     if !skip_android

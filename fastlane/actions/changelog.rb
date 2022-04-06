@@ -128,7 +128,7 @@ module Fastlane
               env_name: "CHANGELOG_SKIP_CREATE_FILES",
               description: "Skip create new files",
               is_string: false,
-              default_value: false,
+              default_value: true,
             ),
             FastlaneCore::ConfigItem.new(
               key: :skip_outdated_changelogs_check,
