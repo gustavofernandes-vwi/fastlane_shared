@@ -35,6 +35,7 @@ private_lane :commit_generated_files do
         "ios/OneSignalNotificationServiceExtension/Info.plist",
         "ios/Podfile.lock",
         "macos/Flutter/GeneratedPluginRegistrant.swift",
+        "lib/generated_plugin_registrant.dart",
     ]
     begin
         git_commit(
