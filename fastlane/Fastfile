@@ -321,7 +321,6 @@ platform :android do
             aab: './build/app/outputs/bundle/betaRelease/app-beta-release.aab',
             release_status: 'draft',
             version_name: "#{version_code} (#{version_name})",
-            rollout: '1',
         )
     end
 
@@ -341,7 +340,6 @@ platform :android do
             aab: './build/app/outputs/bundle/prodRelease/app-prod-release.aab',
             release_status: 'draft',
             version_name: "#{version_code} (#{version_name})",
-            rollout: '1',
         )
     end
 
@@ -375,7 +373,6 @@ platform :android do
             aab: './build/app/outputs/bundle/alphaRelease/app-alpha-release.aab',
             release_status: 'draft',
             version_name: "#{version_code} (#{version_name})",
-            rollout: '1',
         )
 
         File.delete("./metadata/android/pt-BR/changelogs/#{version_code}.txt")
