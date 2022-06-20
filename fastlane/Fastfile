@@ -152,6 +152,18 @@ lane :alpha_all do |options|
         Fastlane::LaneManager.cruise_lane('android','alpha')
         discard_git_changes
     end
+
+    # All builds uploaded, time to release
+
+    if !skip_ios
+        # Release iOS app on AppStore Connect
+        Fastlane::LaneManager.cruise_lane('ios','release_alpha')
+    end
+
+    if !skip_android
+        # Release Android app on Google Play Console
+        Fastlane::LaneManager.cruise_lane('android','release_alpha')
+    end
 end
 
 desc "Cria a release no GitHub e gera builds executáveis (apk do android) para anexar na release."
@@ -266,14 +278,20 @@ platform :ios do
             export_xcargs: "-allowProvisioningUpdates",
         )
         pilot(
-            # skip_submission: true,
-            # skip_waiting_for_build_processing: true,
+            username: ENV['APPSTORE_CONNECT_USERNAME'],
+            app_version: version_name,
+            build_number: "#{version_code}",
+            changelog: 'Sem informações sobre essa versão no momento',
+        )
+    end
+
+    lane release_alpha do
+        pilot(
             username: ENV['APPSTORE_CONNECT_USERNAME'],
             distribute_external: true,
             app_version: version_name,
             build_number: "#{version_code}",
             groups: ['Devs'],
-            changelog: 'Sem informações sobre essa versão no momento',
         )
     end
 end
@@ -297,6 +315,7 @@ platform :android do
             aab: './build/app/outputs/bundle/betaRelease/app-beta-release.aab',
             release_status: 'draft',
             version_name: "#{version_code} (#{version_name})",
+            rollout: 1,
         )
     end
 
@@ -316,6 +335,7 @@ platform :android do
             aab: './build/app/outputs/bundle/prodRelease/app-prod-release.aab',
             release_status: 'draft',
             version_name: "#{version_code} (#{version_name})",
+            rollout: 1,
         )
     end
 
@@ -347,11 +367,22 @@ platform :android do
         supply(
             track: 'internal',
             aab: './build/app/outputs/bundle/alphaRelease/app-alpha-release.aab',
-            release_status: 'completed',
+            release_status: 'draft',
             version_name: "#{version_code} (#{version_name})",
+            rollout: 1,
         )
 
         File.delete("./metadata/android/pt-BR/changelogs/#{version_code}.txt")
+    end
+
+    lane release_alpha do
+        supply(
+            skip_upload_aab: true,
+            track: 'internal',
+            release_status: 'completed',
+            version_name: "#{version_code} (#{version_name})",
+            rollout: 1,
+        )
     end
 
     lane :beta_for_github do
