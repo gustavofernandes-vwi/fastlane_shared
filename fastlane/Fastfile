@@ -292,6 +292,7 @@ platform :ios do
 
         pilot(
             username: ENV['APPSTORE_CONNECT_USERNAME'],
+            app_platform: 'ios',
             distribute_external: true,
             distribute_only: true,
             app_version: version_name,
@@ -384,7 +385,7 @@ platform :android do
         date = lastCommitDateTIme
         version_name = '0.0.1'
         version_code = dateTimeToUtcTimestamp(date)
-        
+
         supply(
             skip_upload_aab: true,
             track: 'internal',
