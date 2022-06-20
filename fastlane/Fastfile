@@ -285,7 +285,7 @@ platform :ios do
         )
     end
 
-    lane release_alpha do
+    lane :release_alpha do
         pilot(
             username: ENV['APPSTORE_CONNECT_USERNAME'],
             distribute_external: true,
@@ -375,7 +375,7 @@ platform :android do
         File.delete("./metadata/android/pt-BR/changelogs/#{version_code}.txt")
     end
 
-    lane release_alpha do
+    lane :release_alpha do
         supply(
             skip_upload_aab: true,
             track: 'internal',
