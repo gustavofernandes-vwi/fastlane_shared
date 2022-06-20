@@ -289,6 +289,7 @@ platform :ios do
         pilot(
             username: ENV['APPSTORE_CONNECT_USERNAME'],
             distribute_external: true,
+            distribute_only: true,
             app_version: version_name,
             build_number: "#{version_code}",
             groups: ['Devs'],
