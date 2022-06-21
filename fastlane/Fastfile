@@ -96,6 +96,18 @@ lane :beta_all do |options|
         beta_github_release
         commit_generated_files
     end
+
+    # All builds uploaded, time to release
+
+    if !skip_ios
+        # Release iOS app on AppStore Connect
+        Fastlane::LaneManager.cruise_lane('ios','release_beta')
+    end
+
+    if !skip_android
+        # Release Android app on Google Play Console
+        Fastlane::LaneManager.cruise_lane('android','release_beta')
+    end
 end
 
 desc "Gera as builds de **produção** para ambas as plataformas e faz upload para as ferramentas de distribuição correspondentes."
@@ -239,6 +251,20 @@ platform :ios do
         )
     end
 
+    lane :release_beta do
+        version_code = Actions.lane_context['FLUTTER_VERSION_CODE']
+
+        pilot(
+            username: ENV['APPSTORE_CONNECT_USERNAME'],
+            app_platform: 'ios',
+            distribute_external: true,
+            distribute_only: true,
+            app_version: version_name,
+            build_number: "#{version_code}",
+            groups: ['Vivaweb'],
+        )
+    end
+
     desc "Gera a build de **produção** do iOS e faz upload para o AppStore Connect (TestFlight)"
     lane :prod do
         ensure_release_branch
@@ -321,6 +347,26 @@ platform :android do
             aab: './build/app/outputs/bundle/betaRelease/app-beta-release.aab',
             release_status: 'draft',
             version_name: "#{version_code} (#{version_name})",
+            version_code: "#{version_code}",
+        )
+    end
+
+    lane :release_beta do
+        version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
+        version_code = Actions.lane_context['FLUTTER_VERSION_CODE']
+
+        supply(
+            skip_upload_aab: true,
+            track: 'internal',
+            track_promote_to: 'internal',
+            release_status: 'completed',
+            version_code: "#{version_code}",
+            rollout: '1',
+            skip_upload_apk: true,
+            skip_upload_metadata: true,
+            skip_upload_changelogs: true,
+            skip_upload_images: true,
+            skip_upload_screenshots: true,
         )
     end
 
@@ -340,6 +386,7 @@ platform :android do
             aab: './build/app/outputs/bundle/prodRelease/app-prod-release.aab',
             release_status: 'draft',
             version_name: "#{version_code} (#{version_name})",
+            version_code: "#{version_code}"
         )
     end
 
