@@ -379,9 +379,11 @@ platform :android do
     end
 
     lane :release_alpha do
-        date = lastCommitDateTIme
-        version_name = '0.0.1'
-        version_code = dateTimeToUtcTimestamp(date)
+        version_codes = google_play_track_version_codes(
+            track: 'internal',
+        )
+
+        version_code = version_codes[0]
 
         supply(
             skip_upload_aab: true,
