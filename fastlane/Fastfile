@@ -387,7 +387,7 @@ platform :android do
             skip_upload_aab: true,
             track: 'internal',
             release_status: 'completed',
-            version_name: "#{version_code} (#{version_name})",
+            version_code: "#{version_code}",
             rollout: '1',
         )
     end
