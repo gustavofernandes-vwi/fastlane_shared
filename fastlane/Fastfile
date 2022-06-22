@@ -36,6 +36,7 @@ private_lane :commit_generated_files do
         "ios/Podfile.lock",
         "macos/Flutter/GeneratedPluginRegistrant.swift",
         "lib/generated_plugin_registrant.dart",
+        "fastlane/README.md"
     ]
     begin
         git_commit(
