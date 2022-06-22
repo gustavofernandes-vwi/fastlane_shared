@@ -80,38 +80,43 @@ lane :beta_all do |options|
     end
     ensure_release_branch
 
-    if !skip_android && !skip_build
-        ensure_android_changelog_limit
-    end
-
-    if !skip_ios && !skip_build
-        # Build for iOS and upload to AppStore Connect
-        Fastlane::LaneManager.cruise_lane('ios','beta')
-        commit_generated_files
-    end
+    if !skip_build
+        if !skip_android
+            ensure_android_changelog_limit
+        end
     
-    if !skip_android && !skip_build
-        # Build for Android and upload to Google Play Console
-        Fastlane::LaneManager.cruise_lane('android','beta')
-        commit_generated_files
-    end
-    
-    if !skip_github && !skip_build
-        # Build executables (android apk) and uploads to newly created github release
-        beta_github_release
-        commit_generated_files
+        if !skip_ios
+            # Build for iOS and upload to AppStore Connect
+            Fastlane::LaneManager.cruise_lane('ios','beta')
+            commit_generated_files
+        end
+        
+        if !skip_android
+            # Build for Android and upload to Google Play Console
+            Fastlane::LaneManager.cruise_lane('android','beta')
+            commit_generated_files
+        end
+        
+        if !skip_github
+            # Build executables (android apk) and uploads to newly created github release
+            beta_github_release
+            commit_generated_files
+        end
     end
 
     # All builds uploaded, time to release
 
-    if !skip_ios && release
-        # Release iOS app on AppStore Connect
-        Fastlane::LaneManager.cruise_lane('ios','release_beta')
-    end
-
-    if !skip_android && release
-        # Release Android app on Google Play Console
-        Fastlane::LaneManager.cruise_lane('android','release_beta')
+    if release
+        commit_generated_files
+        if !skip_ios
+            # Release iOS app on AppStore Connect
+            Fastlane::LaneManager.cruise_lane('ios','release_beta')
+        end
+    
+        if !skip_android
+            # Release Android app on Google Play Console
+            Fastlane::LaneManager.cruise_lane('android','release_beta')
+        end
     end
 end
 
