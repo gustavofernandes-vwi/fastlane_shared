@@ -75,7 +75,9 @@ lane :beta_all do |options|
     skip_build = options[:skip_build] || false
     release = options[:release] || false
 
-    check_changelogs(options)
+    if !skip_build
+        check_changelogs(options)
+    end
     ensure_release_branch
 
     if !skip_android && !skip_build
