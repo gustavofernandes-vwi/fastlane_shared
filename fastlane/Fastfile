@@ -13,6 +13,15 @@ lane :version do
     UI.message Actions.lane_context['FLUTTER_VERSION_CODE']
 end
 
+desc "Exibe a data e a timestamp do último commit"
+lane :last_commit do
+    date = lastCommitDateTime
+    version_code = dateTimeToUtcTimestamp(date)
+
+    UI.message "Last commit date: #{date}"
+    UI.message "UTC timestamp: #{version_code}"
+end
+
 desc "Cria os arquivos de changelog para serem preenchidos"
 desc "O conteúdo desses arquivos serão usados na hora de subir as builds"
 lane :create_changelog_files do
@@ -301,7 +310,7 @@ platform :ios do
     lane :alpha do
         ensure_git_branch(branch: 'master')
 
-        date = lastCommitDateTIme
+        date = lastCommitDateTime
         version_name = '0.0.1'
         version_code = dateTimeToUtcTimestamp(date)
 
@@ -326,7 +335,7 @@ platform :ios do
     end
 
     lane :release_alpha do
-        date = lastCommitDateTIme
+        date = lastCommitDateTime
         version_name = '0.0.1'
         version_code = dateTimeToUtcTimestamp(date)
         package_name = CredentialsManager::AppfileConfig.try_fetch_value(:package_name)
@@ -412,7 +421,7 @@ platform :android do
         ensure_android_changelog_limit
         ensure_git_branch(branch: 'master')
 
-        date = lastCommitDateTIme
+        date = lastCommitDateTime
         version_name = '0.0.1'
         version_code = dateTimeToUtcTimestamp(date)
         begin
@@ -500,7 +509,7 @@ def dateTimeToUtcTimestamp(date)
     end
 end
 
-def lastCommitDateTIme
+def lastCommitDateTime
     git_log = `git log -n1 --pretty="%ci"`
     git_log = git_log.strip
     return DateTime.strptime(git_log, "%Y-%m-%d %H:%M:%S %z")
