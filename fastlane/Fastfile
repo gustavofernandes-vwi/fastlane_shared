@@ -13,7 +13,8 @@ lane :version do
     UI.message Actions.lane_context['FLUTTER_VERSION_CODE']
 end
 
-lane :make_changelog do |flavor|
+lane :make_changelog do |options|
+    flavor = options['flavor']
     version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
     version_code = Actions.lane_context['FLUTTER_VERSION_CODE']
     changelog_maker(
@@ -105,7 +106,7 @@ lane :beta_all do |options|
     release = options[:release] || false
 
     if !skip_build
-        make_changelog 'beta'
+        make_changelog(flavor: 'beta')
         check_changelogs(options)
     end
     ensure_release_branch
@@ -158,7 +159,7 @@ lane :prod_all do |options|
     skip_android = options[:skip_android] || false
     skip_github = options[:skip_github] || false
 
-    make_changelog 'prod'
+    make_changelog(flavor: 'prod')
     check_changelogs(options)
     ensure_release_branch
 
