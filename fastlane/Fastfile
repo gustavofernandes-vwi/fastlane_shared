@@ -14,7 +14,7 @@ lane :version do
 end
 
 lane :make_changelog do |options|
-    flavor = options['flavor']
+    flavor = options[:flavor]
     version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
     version_code = Actions.lane_context['FLUTTER_VERSION_CODE']
     changelog_maker(
