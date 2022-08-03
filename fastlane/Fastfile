@@ -29,7 +29,7 @@ lane :make_changelog do |flavor|
             "github" => 'fastlane/metadata/github/changelog.md',
             "android" => 'fastlane/metadata/android/pt-BR/changelogs/default.txt',
         },
-        extra_data: File.read('fastlane/metadata/jira/changelog.md'),
+        extra_data: File.read('metadata/jira/changelog.md'),
     )
 end
 
