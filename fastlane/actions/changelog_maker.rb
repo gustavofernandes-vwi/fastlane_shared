@@ -211,7 +211,7 @@ module Fastlane
 
       def filterPlatform(platform, allPlatforms)
         notPlataforms = allPlatforms.select {|p| p != platform}
-        new_list = list.select {|c| !(c.tags & notPlataforms).any?}
+        new_list = list.select {|c| c.hasTag(platform) || (!(c.tags & notPlataforms).any?)}
         return ChangesList.new new_list
       end
     end
