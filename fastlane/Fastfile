@@ -322,11 +322,9 @@ platform :ios do
             export_method: "app-store",
             export_xcargs: "-allowProvisioningUpdates",
         )
-        pilot(
-            # skip_submission: true,
-            skip_waiting_for_build_processing: true,
+        deliver(
             username: ENV['APPSTORE_CONNECT_USERNAME'],
-            changelog: (File.read(Actions.lane_context['CHANGELOG_IOS_FILE'].sub! './fastlane/', '') rescue ""),
+            release_notes: (File.read(Actions.lane_context['CHANGELOG_IOS_FILE'].sub! './fastlane/', '') rescue ""),
         )
     end
 
