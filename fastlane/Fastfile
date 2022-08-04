@@ -343,7 +343,9 @@ platform :ios do
         )
         deliver(
             username: ENV['APPSTORE_CONNECT_USERNAME'],
-            release_notes: (File.read(Actions.lane_context['CHANGELOG_IOS_FILE'].sub! './fastlane/', '') rescue ""),
+            release_notes: {
+                'default' => (File.read(Actions.lane_context['CHANGELOG_IOS_FILE'].sub! './fastlane/', '') rescue ""),
+            },
         )
     end
 
