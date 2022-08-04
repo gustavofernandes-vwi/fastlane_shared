@@ -47,7 +47,7 @@ lane :download_jira_notes do
     puts text
     File.write(
         "./metadata/jira/changelog.md",
-        "Release notes - #{ENV['JIRA_PROJECT_NAME']} - Version APP #{version_name}\n",
+        "Release notes - #{ENV['JIRA_PROJECT_NAME']} - Version APP #{version_name}\n\n",
     )
     File.write("./metadata/jira/changelog.md", text, mode: 'a')
 end
