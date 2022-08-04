@@ -343,6 +343,7 @@ platform :ios do
         )
         deliver(
             username: ENV['APPSTORE_CONNECT_USERNAME'],
+            ignore_language_directory_validation: true,
             release_notes: {
                 'default' => (File.read(Actions.lane_context['CHANGELOG_IOS_FILE'].sub! './fastlane/', '') rescue ""),
             },
