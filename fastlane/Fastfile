@@ -17,6 +17,7 @@ lane :make_changelog do |options|
     flavor = options[:flavor]
     version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
     version_code = Actions.lane_context['FLUTTER_VERSION_CODE']
+    download_jira_notes
     changelog_maker(
         version: version_name,
         build: version_code,
