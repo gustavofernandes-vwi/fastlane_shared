@@ -34,6 +34,24 @@ lane :make_changelog do |options|
     )
 end
 
+lane :download_jira_notes do
+    version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
+    text = jira_release_notes(
+        username: "gustavofernandes@vivaweb.net",
+        password: ENV['JIRA_TOKEN'], # password or api token
+        url:      "https://viva-web.atlassian.net",
+        project:  ENV['JIRA_PROJECT_NAME'],
+        version:  "APP #{version_name}",
+        format:   "markdown"
+    )
+    puts text
+    File.write(
+        "./metadata/jira/changelog.md",
+        "Release notes - #{ENV['JIRA_PROJECT_NAME']} - Version APP #{version_name}\n",
+    )
+    File.write("./metadata/jira/changelog.md", text, mode: 'a')
+end
+
 desc "Exibe a data e a timestamp do último commit"
 lane :last_commit do
     date = lastCommitDateTime
