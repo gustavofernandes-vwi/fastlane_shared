@@ -384,8 +384,6 @@ platform :ios do
             app_platform: 'ios',
             distribute_external: true,
             distribute_only: true,
-            app_version: version_name,
-            build_number: "#{version_code}",
             app_identifier: package_name,
             groups: ['Devs'],
         )
