@@ -457,6 +457,7 @@ platform :android do
         supply(
             aab: './build/app/outputs/bundle/prodRelease/app-prod-release.aab',
             release_status: 'draft',
+            rollout: '1',
             version_name: "#{version_code} (#{version_name})",
             version_code: "#{version_code}"
         )
