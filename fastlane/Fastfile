@@ -415,6 +415,7 @@ platform :ios do
             username: ENV['APPSTORE_CONNECT_USERNAME'],
             keychain_password: ENV['KEYCHAIN_PASSWORD'],
             output_path: 'fastlane/keys/',
+            generate_apple_certs: true,
         )
         sigh(
             # readonly: true,
