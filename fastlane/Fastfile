@@ -423,7 +423,7 @@ platform :ios do
             app_identifier: package_name,
             output_path: 'fastlane/keys/',
         )
-        if (exist?("../ios/OneSignalNotificationServiceExtension/NotificationService.swift")) then
+        if (File.exist?("../ios/OneSignalNotificationServiceExtension/NotificationService.swift")) then
             sigh(
                 # readonly: true,
                 username: ENV['APPSTORE_CONNECT_USERNAME'],
