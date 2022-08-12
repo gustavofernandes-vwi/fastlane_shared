@@ -295,6 +295,7 @@ platform :ios do
     desc "Gera a build **beta** do iOS e faz upload para o AppStore Connect (TestFlight)"
     lane :beta do
         ensure_release_branch
+        prepare_certificates
         flutter_build(build_args: ["--flavor=beta"])
         gym(
             workspace: 'ios/Runner.xcworkspace',
@@ -333,6 +334,7 @@ platform :ios do
     desc "Gera a build de **produção** do iOS e faz upload para o AppStore Connect (TestFlight)"
     lane :prod do
         ensure_release_branch
+        prepare_certificates
         flutter_build(build_args: ["--flavor=prod"])
         gym(
             workspace: 'ios/Runner.xcworkspace',
@@ -361,6 +363,7 @@ platform :ios do
         version_name = '0.0.1'
         version_code = dateTimeToUtcTimestamp(date)
 
+        prepare_certificates
         flutter_build(
             build_args: ["--flavor=alpha"],
             build_number: version_code,
@@ -394,6 +397,21 @@ platform :ios do
             distribute_only: true,
             app_identifier: package_name,
             groups: ['Devs'],
+        )
+    end
+
+    lane :prepare_certificates do
+        package_name = CredentialsManager::AppfileConfig.try_fetch_value(:package_name)
+        cert(
+            username: ENV['APPSTORE_CONNECT_USERNAME'],
+            keychain_password: ENV['KEYCHAIN_PASSWORD'],
+            output_path: 'fastlane/keys/',
+        )
+        sigh(
+            # readonly: true,
+            username: ENV['APPSTORE_CONNECT_USERNAME'],
+            app_identifier: package_name,
+            output_path: 'fastlane/keys/',
         )
     end
 end
