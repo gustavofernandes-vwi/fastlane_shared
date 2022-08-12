@@ -363,10 +363,10 @@ platform :ios do
         version_name = '0.0.1'
         version_code = dateTimeToUtcTimestamp(date)
 
-        disable_automatic_code_signing(path: 'ios/Runner.xcworkspace')
+        disable_automatic_code_signing(path: 'ios/Runner.xcodeproj')
         prepare_certificates
         update_project_provisioning(
-            xcodeproj: "ios/Runner.xcworkspace",
+            xcodeproj: "ios/Runner.xcodeproj",
             # profile: "./watch_app_store.mobileprovision", # optional if you use sigh
             # target_filter: ".*WatchKit Extension.*", # matches name or type of a target
             build_configuration: "Release-alpha",
@@ -384,7 +384,7 @@ platform :ios do
             export_method: "app-store",
             export_xcargs: "-allowProvisioningUpdates",
         )
-        enable_automatic_code_signing(path: 'ios/Runner.xcworkspace')
+        enable_automatic_code_signing(path: 'ios/Runner.xcodeproj')
         pilot(
             username: ENV['APPSTORE_CONNECT_USERNAME'],
             app_version: version_name,
