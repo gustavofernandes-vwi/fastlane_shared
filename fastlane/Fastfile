@@ -363,7 +363,15 @@ platform :ios do
         version_name = '0.0.1'
         version_code = dateTimeToUtcTimestamp(date)
 
+        disable_automatic_code_signing(path: 'ios/Runner.xcworkspace')
         prepare_certificates
+        update_project_provisioning(
+            xcodeproj: "ios/Runner.xcworkspace",
+            # profile: "./watch_app_store.mobileprovision", # optional if you use sigh
+            # target_filter: ".*WatchKit Extension.*", # matches name or type of a target
+            build_configuration: "Release-alpha",
+            # code_signing_identity: "iPhone Development" # optionally specify the codesigning identity
+        )
         flutter_build(
             build_args: ["--flavor=alpha"],
             build_number: version_code,
@@ -376,6 +384,7 @@ platform :ios do
             export_method: "app-store",
             export_xcargs: "-allowProvisioningUpdates",
         )
+        enable_automatic_code_signing(path: 'ios/Runner.xcworkspace')
         pilot(
             username: ENV['APPSTORE_CONNECT_USERNAME'],
             app_version: version_name,
