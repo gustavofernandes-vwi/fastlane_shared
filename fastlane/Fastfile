@@ -295,7 +295,7 @@ platform :ios do
     desc "Gera a build **beta** do iOS e faz upload para o AppStore Connect (TestFlight)"
     lane :beta do
         ensure_release_branch
-        prepare_certificates
+        # prepare_certificates
         flutter_build(build_args: ["--flavor=beta"])
         gym(
             workspace: 'ios/Runner.xcworkspace',
@@ -334,7 +334,7 @@ platform :ios do
     desc "Gera a build de **produção** do iOS e faz upload para o AppStore Connect (TestFlight)"
     lane :prod do
         ensure_release_branch
-        prepare_certificates
+        # prepare_certificates
         flutter_build(build_args: ["--flavor=prod"])
         gym(
             workspace: 'ios/Runner.xcworkspace',
@@ -363,8 +363,8 @@ platform :ios do
         version_name = '0.0.1'
         version_code = dateTimeToUtcTimestamp(date)
 
-        disable_automatic_code_signing(path: 'ios/Runner.xcodeproj')
-        prepare_certificates
+        # disable_automatic_code_signing(path: 'ios/Runner.xcodeproj')
+        # prepare_certificates
         update_project_provisioning(
             xcodeproj: "ios/Runner.xcodeproj",
             # profile: "./watch_app_store.mobileprovision", # optional if you use sigh
@@ -384,7 +384,7 @@ platform :ios do
             export_method: "app-store",
             export_xcargs: "-allowProvisioningUpdates",
         )
-        enable_automatic_code_signing(path: 'ios/Runner.xcodeproj')
+        # enable_automatic_code_signing(path: 'ios/Runner.xcodeproj')
         pilot(
             username: ENV['APPSTORE_CONNECT_USERNAME'],
             app_version: version_name,
