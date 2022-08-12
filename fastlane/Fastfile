@@ -423,6 +423,14 @@ platform :ios do
             app_identifier: package_name,
             output_path: 'fastlane/keys/',
         )
+        if (exist?("../ios/OneSignalNotificationServiceExtension/NotificationService.swift")) then
+            sigh(
+                # readonly: true,
+                username: ENV['APPSTORE_CONNECT_USERNAME'],
+                app_identifier: "#{package_name}.OneSignalNotificationServiceExtension",
+                output_path: 'fastlane/keys/',
+            )
+        end
     end
 end
 
