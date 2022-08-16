@@ -365,13 +365,13 @@ platform :ios do
 
         # disable_automatic_code_signing(path: 'ios/Runner.xcodeproj')
         # prepare_certificates
-        update_project_provisioning(
-            xcodeproj: "ios/Runner.xcodeproj",
-            # profile: "./watch_app_store.mobileprovision", # optional if you use sigh
-            # target_filter: ".*WatchKit Extension.*", # matches name or type of a target
-            build_configuration: "Release-alpha",
-            # code_signing_identity: "iPhone Development" # optionally specify the codesigning identity
-        )
+        # update_project_provisioning(
+        #     xcodeproj: "ios/Runner.xcodeproj",
+        #     # profile: "./watch_app_store.mobileprovision", # optional if you use sigh
+        #     # target_filter: ".*WatchKit Extension.*", # matches name or type of a target
+        #     build_configuration: "Release-alpha",
+        #     # code_signing_identity: "iPhone Development" # optionally specify the codesigning identity
+        # )
         flutter_build(
             build_args: ["--flavor=alpha"],
             build_number: version_code,
