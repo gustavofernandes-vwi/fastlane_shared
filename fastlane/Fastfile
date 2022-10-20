@@ -121,6 +121,7 @@ lane :beta_all do |options|
     skip_ios = options[:skip_ios] || false
     skip_android = options[:skip_android] || false
     skip_github = options[:skip_github] || false
+    skip_github_build = options[:skip_github_build] || false
     skip_build = options[:skip_build] || false
     release = options[:release] || false
 
@@ -239,8 +240,11 @@ lane :alpha_all do |options|
 end
 
 desc "Cria a release no GitHub e gera builds executáveis (apk do android) para anexar na release."
-lane :beta_github_release do
-    Fastlane::LaneManager.cruise_lane('android','beta_for_github')
+lane :beta_github_release do |options|
+    skip_github_build = options[:skip_github_build] || false
+    if !skip_github_build
+        Fastlane::LaneManager.cruise_lane('android','beta_for_github')
+    end
 
     version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
     version_code = Actions.lane_context['FLUTTER_VERSION_CODE']
@@ -267,7 +271,10 @@ end
 
 desc "Cria a release no GitHub e gera builds executáveis (apk do android) para anexar na release."
 lane :prod_github_release do
-    Fastlane::LaneManager.cruise_lane('android','prod_for_github')
+    skip_github_build = options[:skip_github_build] || false
+    if !skip_github_build
+        Fastlane::LaneManager.cruise_lane('android','prod_for_github')
+    end
 
     version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
     version_code = Actions.lane_context['FLUTTER_VERSION_CODE']
