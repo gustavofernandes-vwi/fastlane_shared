@@ -17,6 +17,20 @@ private_lane :load_env do |options|
     Dotenv.load(envs[flavor])
 end
 
+private_lane :check_valid_build_number do |options|
+    android_track = options[:android_track]
+    version_codes = google_play_track_version_codes(
+        track: android_track,
+    )
+    latest_version_code = version_codes[0]
+
+    version_code = Actions.lane_context['FLUTTER_VERSION_CODE']
+
+    if version_code <= latest_version_code
+        UI.important "Version code #{version_code} is equal or smaller than latest code on Play Store Console (#{latest_version_code})"
+    end
+end
+
 desc "Exibe o código e nome de versão atual do app, conforme pubspec.yaml"
 lane :version do
     UI.message Actions.lane_context['FLUTTER_VERSION_NAME']
@@ -146,6 +160,7 @@ lane :beta_all do |options|
 
     if !skip_build
         if !skip_android
+            check_valid_build_number(android_track: 'internal')
             ensure_android_changelog_limit
         end
     
@@ -199,6 +214,7 @@ lane :prod_all do |options|
     ensure_release_branch
 
     if !skip_android
+        check_valid_build_number(android_track: 'production')
         ensure_android_changelog_limit
     end
 
@@ -474,6 +490,7 @@ platform :android do
     desc "Gera o appbundle do **beta** para Android e faz upload para o Google Play Console"
     lane :beta do
         load_env(flavor: 'beta')
+        check_valid_build_number(android_track: 'internal')
         ensure_android_changelog_limit
         ensure_release_branch
         begin
@@ -518,6 +535,7 @@ platform :android do
     desc "Gera o appbundle da **produção** para Android"
     lane :prod do
         load_env(flavor: 'prod')
+        check_valid_build_number(android_track: 'production')
         ensure_android_changelog_limit
         ensure_release_branch
         begin
