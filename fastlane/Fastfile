@@ -7,6 +7,16 @@ private_lane :flutter_version_values do
     Actions.lane_context['FLUTTER_VERSION_CODE'] = version_info['version_code']
 end
 
+private_lane :load_env do |options|
+    flavor = options[:flavor]
+    envs = {
+        'prod': '.env.prod',
+        'beta': '.env.beta',
+        'alpha': '.env.alpha',
+    }
+    Dotenv.load(envs[flavor])
+end
+
 desc "Exibe o código e nome de versão atual do app, conforme pubspec.yaml"
 lane :version do
     UI.message Actions.lane_context['FLUTTER_VERSION_NAME']
@@ -15,6 +25,7 @@ end
 
 lane :make_changelog do |options|
     flavor = options[:flavor]
+    load_env(flavor: flavor)
     version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
     version_code = Actions.lane_context['FLUTTER_VERSION_CODE']
     download_jira_notes
@@ -124,6 +135,8 @@ lane :beta_all do |options|
     skip_github_build = options[:skip_github_build] || false
     skip_build = options[:skip_build] || false
     release = options[:release] || false
+    
+    load_env(flavor: 'beta')
 
     if !skip_build
         make_changelog(flavor: 'beta')
@@ -179,6 +192,8 @@ lane :prod_all do |options|
     skip_android = options[:skip_android] || false
     skip_github = options[:skip_github] || false
 
+    load_env(flavor: 'prod')
+
     make_changelog(flavor: 'prod')
     check_changelogs(options)
     ensure_release_branch
@@ -212,6 +227,8 @@ lane :alpha_all do |options|
     skip_ios = options[:skip_ios] || false
     skip_android = options[:skip_android] || false
 
+    load_env(flavor: 'alpha')
+
     ensure_git_branch(branch: 'master')
 
     if !skip_ios
@@ -242,6 +259,9 @@ end
 desc "Cria a release no GitHub e gera builds executáveis (apk do android) para anexar na release."
 lane :beta_github_release do |options|
     skip_github_build = options[:skip_github_build] || false
+
+    load_env(flavor: 'beta')
+
     if !skip_github_build
         Fastlane::LaneManager.cruise_lane('android','beta_for_github')
     end
@@ -272,6 +292,9 @@ end
 desc "Cria a release no GitHub e gera builds executáveis (apk do android) para anexar na release."
 lane :prod_github_release do
     skip_github_build = options[:skip_github_build] || false
+
+    load_env(flavor: 'prod')
+
     if !skip_github_build
         Fastlane::LaneManager.cruise_lane('android','prod_for_github')
     end
@@ -301,6 +324,7 @@ platform :ios do
 
     desc "Gera a build **beta** do iOS e faz upload para o AppStore Connect (TestFlight)"
     lane :beta do
+        load_env(flavor: 'beta')
         ensure_release_branch
         # prepare_certificates
         flutter_build(build_args: ["--flavor=beta"])
@@ -320,6 +344,7 @@ platform :ios do
     end
 
     lane :release_beta do
+        load_env(flavor: 'beta')
         commit_generated_files
 
         version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
@@ -340,6 +365,7 @@ platform :ios do
 
     desc "Gera a build de **produção** do iOS e faz upload para o AppStore Connect (TestFlight)"
     lane :prod do
+        load_env(flavor: 'prod')
         ensure_release_branch
         # prepare_certificates
         flutter_build(build_args: ["--flavor=prod"])
@@ -364,6 +390,7 @@ platform :ios do
     end
 
     lane :alpha do
+        load_env(flavor: 'alpha')
         ensure_git_branch(branch: 'master')
 
         date = lastCommitDateTime
@@ -401,6 +428,7 @@ platform :ios do
     end
 
     lane :release_alpha do
+        load_env(flavor: 'alpha')
         date = lastCommitDateTime
         version_name = '0.0.1'
         version_code = dateTimeToUtcTimestamp(date)
@@ -445,6 +473,7 @@ platform :android do
 
     desc "Gera o appbundle do **beta** para Android e faz upload para o Google Play Console"
     lane :beta do
+        load_env(flavor: 'beta')
         ensure_android_changelog_limit
         ensure_release_branch
         begin
@@ -465,6 +494,7 @@ platform :android do
     end
 
     lane :release_beta do
+        load_env(flavor: 'beta')
         commit_generated_files
         
         version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
@@ -487,6 +517,7 @@ platform :android do
 
     desc "Gera o appbundle da **produção** para Android"
     lane :prod do
+        load_env(flavor: 'prod')
         ensure_android_changelog_limit
         ensure_release_branch
         begin
@@ -506,6 +537,7 @@ platform :android do
     end
 
     lane :alpha do
+        load_env(flavor: 'alpha')
         ensure_android_changelog_limit
         ensure_git_branch(branch: 'master')
 
@@ -541,6 +573,7 @@ platform :android do
     end
 
     lane :release_alpha do
+        load_env(flavor: 'alpha')
         version_codes = google_play_track_version_codes(
             track: 'internal',
         )
@@ -563,6 +596,7 @@ platform :android do
     end
 
     lane :beta_for_github do
+        load_env(flavor: 'beta')
         ensure_release_branch
         begin
             flutter_build(build: 'apk')
