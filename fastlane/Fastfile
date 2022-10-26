@@ -26,7 +26,7 @@ private_lane :check_valid_build_number do |options|
 
     version_code = Actions.lane_context['FLUTTER_VERSION_CODE']
 
-    if version_code <= latest_version_code
+    if version_code.to_i <= latest_version_code
         UI.important "Version code #{version_code} is equal or smaller than latest code on Play Store Console (#{latest_version_code})"
     end
 end
