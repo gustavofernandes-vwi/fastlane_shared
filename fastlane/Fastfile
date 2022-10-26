@@ -10,9 +10,9 @@ end
 private_lane :load_env do |options|
     flavor = options[:flavor]
     envs = {
-        'prod': '.env.prod',
-        'beta': '.env.beta',
-        'alpha': '.env.alpha',
+        'prod' => '.env.prod',
+        'beta' => '.env.beta',
+        'alpha' => '.env.alpha',
     }
     Dotenv.load(envs[flavor])
 end
