@@ -178,7 +178,7 @@ lane :beta_all do |options|
         
         if !skip_github
             # Build executables (android apk) and uploads to newly created github release
-            beta_github_release
+            beta_github_release options
             commit_generated_files
         end
     end
