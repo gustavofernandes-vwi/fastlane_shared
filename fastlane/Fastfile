@@ -232,7 +232,7 @@ lane :prod_all do |options|
     
     if !skip_github
         # Build executables (android apk) and uploads to newly created github release
-        prod_github_release
+        prod_github_release options
         commit_generated_files
     end
 end
@@ -306,7 +306,7 @@ lane :beta_github_release do |options|
 end
 
 desc "Cria a release no GitHub e gera builds executáveis (apk do android) para anexar na release."
-lane :prod_github_release do
+lane :prod_github_release do |options|
     skip_github_build = options[:skip_github_build] || false
 
     load_env(flavor: 'prod')
