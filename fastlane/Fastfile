@@ -399,8 +399,6 @@ platform :ios do
                 'default' => (File.read(Actions.lane_context['CHANGELOG_IOS_FILE'].sub! './fastlane/', '') rescue ""),
             },
             skip_screenshots: true,
-            skip_metadata: true,
-            skip_app_version_update: true,
             force: true,
         )
     end
