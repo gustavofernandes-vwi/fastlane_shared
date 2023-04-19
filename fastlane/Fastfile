@@ -1,3 +1,5 @@
+require 'fileutils'
+
 android_apk_folder = './build/app/outputs/flutter-apk'
 android_aab_folder = ''
 
@@ -392,12 +394,12 @@ platform :ios do
             export_method: "app-store",
             export_xcargs: "-allowProvisioningUpdates",
         )
+        changelog_path = Actions.lane_context['CHANGELOG_IOS_FILE'].sub! './fastlane/', ''
+        FileUtils.mkdir_p "metadata/ios/deliver/pt-BR"
+        FileUtils.copy_file changelog_path, "metadata/ios/deliver/pt-BR/release_notes.txt"
         deliver(
+            metadata_path: "fastlane/metadata/ios/deliver",
             username: ENV['APPSTORE_CONNECT_USERNAME'],
-            ignore_language_directory_validation: true,
-            release_notes: {
-                'default' => (File.read(Actions.lane_context['CHANGELOG_IOS_FILE'].sub! './fastlane/', '') rescue ""),
-            },
             skip_screenshots: true,
             force: true,
         )
