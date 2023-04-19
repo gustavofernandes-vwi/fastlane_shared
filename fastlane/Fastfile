@@ -405,6 +405,22 @@ platform :ios do
         )
     end
 
+    lane :submit_to_review do
+        load_env(flavor: 'prod')
+        # Não precisa verificar pois não depende dos arquivos locais
+        # Se for forçar o número da versão que for liberar, daí precisa checar a branch
+        # ensure_release_branch
+        deliver(
+            submit_for_review: true,
+            automatic_release: false,
+
+            skip_binary_upload: true,
+            skip_screenshots: true,
+            skip_metadata: true,
+            skip_app_version_update: true,
+        )
+    end
+
     lane :alpha do
         load_env(flavor: 'alpha')
         ensure_git_branch(branch: 'master')
