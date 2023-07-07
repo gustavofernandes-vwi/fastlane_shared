@@ -44,7 +44,7 @@ lane :make_changelog do |options|
     load_env(flavor: flavor)
     version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
     version_code = Actions.lane_context['FLUTTER_VERSION_CODE']
-    download_jira_notes
+    download_notion_notes
     changelog_maker(
         version: version_name,
         build: version_code,
@@ -58,7 +58,7 @@ lane :make_changelog do |options|
             "github" => 'fastlane/metadata/github/changelog.md',
             "android" => 'fastlane/metadata/android/pt-BR/changelogs/default.txt',
         },
-        extra_data: File.read('metadata/jira/changelog.md'),
+        extra_data: File.read('metadata/notion/changelog.md'),
     )
 end
 
@@ -72,12 +72,25 @@ lane :download_jira_notes do
         version:  "APP #{version_name}",
         format:   "markdown"
     )
-    puts text
+
     File.write(
         "./metadata/jira/changelog.md",
         "# Release notes - #{ENV['JIRA_PROJECT_NAME']} - Version APP #{version_name}\n\n",
     )
     File.write("./metadata/jira/changelog.md", text, mode: 'a')
+end
+
+lane :download_notion_notes do
+    version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
+    text = notion_release_notes(
+        version: version_name,
+    )
+    
+    File.write(
+        "./metadata/notion/changelog.md",
+        "# Release notes - Version #{version_name}\n\n",
+    )
+    File.write("./metadata/notion/changelog.md", text, mode: 'a')
 end
 
 desc "Exibe a data e a timestamp do último commit"
