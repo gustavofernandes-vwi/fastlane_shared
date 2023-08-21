@@ -96,7 +96,7 @@ end
 desc "Exibe a data e a timestamp do último commit"
 lane :last_commit do
     date = lastCommitDateTime
-    version_code = dateTimeToUtcTimestamp(date)
+    version_code = dateTimeToTimestamp(date)
 
     UI.message "Last commit date: #{date}"
     UI.message "UTC timestamp: #{version_code}"
@@ -440,7 +440,7 @@ platform :ios do
 
         date = lastCommitDateTime
         version_name = '0.0.1'
-        version_code = dateTimeToUtcTimestamp(date)
+        version_code = dateTimeToTimestamp(date)
 
         # disable_automatic_code_signing(path: 'ios/Runner.xcodeproj')
         # prepare_certificates
@@ -590,7 +590,7 @@ platform :android do
 
         date = lastCommitDateTime
         version_name = '0.0.1'
-        version_code = dateTimeToUtcTimestamp(date)
+        version_code = dateTimeToTimestamp(date)
         begin
             flutter_build(
                 build: 'appbundle',
@@ -666,16 +666,11 @@ platform :android do
     end
 end
 
-def dateTimeToUtcTimestamp(date)
-    signal = date.strftime("%z")[0, 1]
+def dateTimeToTimestamp(date)
+    date = date.new_offset(0)
     hours_offset = date.strftime("%z")[1, 2].to_i
     timestamp_offset = hours_offset * 60 * 60
-    case signal
-    when "-"
-        return date.to_time.to_i + timestamp_offset
-    when "+"
-        return date.to_time.to_i - timestamp_offset
-    end
+    return date.to_time.to_i
 end
 
 def lastCommitDateTime
