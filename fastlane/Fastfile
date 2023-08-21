@@ -667,10 +667,10 @@ platform :android do
 end
 
 def dateTimeToTimestamp(date)
-    date = date.new_offset(0)
-    hours_offset = date.strftime("%z")[1, 2].to_i
+    utc = date.new_offset(0)
+    hours_offset = utc.strftime("%z")[1, 2].to_i
     timestamp_offset = hours_offset * 60 * 60
-    return date.to_time.to_i
+    return utc.to_time.to_i
 end
 
 def lastCommitDateTime
