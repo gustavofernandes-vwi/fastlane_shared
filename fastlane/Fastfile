@@ -257,6 +257,7 @@ desc "As builds são numeradas automaticamente de acordo com o último commit e 
 lane :alpha_all do |options|
     skip_ios = options[:skip_ios] || false
     skip_android = options[:skip_android] || false
+    skip_google_drive = options[:skip_android] || true
 
     load_env(flavor: 'alpha')
 
@@ -274,6 +275,12 @@ lane :alpha_all do |options|
         discard_git_changes
     end
 
+    if !skip_google_drive
+        # Build apk
+        Fastlane::LaneManager.cruise_lane('android','alpha_installer_file')
+        discard_git_changes
+    end
+
     # All builds uploaded, time to release
 
     if !skip_ios
@@ -285,6 +292,11 @@ lane :alpha_all do |options|
         # Release Android app on Google Play Console
         Fastlane::LaneManager.cruise_lane('android','release_alpha')
     end
+
+    if !skip_google_drive
+        # Upload apk to google drive
+        alpha_google_drive_upload
+    end
 end
 
 desc "Cria a release no GitHub e gera builds executáveis (apk do android) para anexar na release."
@@ -294,7 +306,7 @@ lane :beta_github_release do |options|
     load_env(flavor: 'beta')
 
     if !skip_github_build
-        Fastlane::LaneManager.cruise_lane('android','beta_for_github')
+        Fastlane::LaneManager.cruise_lane('android','beta_installer_file')
     end
 
     version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
@@ -313,7 +325,7 @@ lane :beta_github_release do |options|
         api_token: ENV['GITHUB_TOKEN'],
         is_draft: false,
         is_prerelease: true,
-        upload_assets: Actions.lane_context['GITHUB_RELEASE_ASSETS'],
+        upload_assets: Actions.lane_context['INSTALLER_FILES'],
         commitish: "release/#{version_name}",
         tag_name: last_git_tag,
         description: (File.read(Actions.lane_context['CHANGELOG_GITHUB_FILE'].sub! './fastlane/', '') rescue "_No changelog provided_"),
@@ -327,7 +339,7 @@ lane :prod_github_release do |options|
     load_env(flavor: 'prod')
 
     if !skip_github_build
-        Fastlane::LaneManager.cruise_lane('android','prod_for_github')
+        Fastlane::LaneManager.cruise_lane('android','prod_installer_file')
     end
 
     version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
@@ -344,11 +356,64 @@ lane :prod_github_release do |options|
         repository_name: ENV['REPOSITORY_NAME'],
         api_token: ENV['GITHUB_TOKEN'],
         is_draft: false,
-        upload_assets: Actions.lane_context['GITHUB_RELEASE_ASSETS'],
+        upload_assets: Actions.lane_context['INSTALLER_FILES'],
         commitish: "release/#{version_name}",
         tag_name: last_git_tag,
         description: (File.read(Actions.lane_context['CHANGELOG_GITHUB_FILE'].sub! './fastlane/', '') rescue "_No changelog provided_"),
     )
+end
+
+lane :alpha_google_drive_upload do |options|
+    load_env(flavor: 'alpha')
+
+    drive_keyfile = './key/google_drive_alpha.json'
+    root_folder = ENV['GOOGLE_DRIVE_RELEASE_FOLDER_ID']
+
+    # TODO: Trocar esses dados por um LaneContext emitido na hora de buildar o alpha
+    date = lastCommitDateTime
+    version_name = '0.0.1'
+    version_code = dateTimeToTimestamp(date)
+    
+    UI.message date
+    UI.message version_code
+    
+    date = date.new_offset(-3) # Para exibir sempre no horário de brasília
+    subfolder_title = date.strftime("%F %H:%M") + " (build #{version_code})"
+
+    UI.message subfolder_title
+
+    find_google_drive_file_by_title(
+        drive_keyfile: drive_keyfile,
+        parent_folder_id: root_folder,
+        file_title: subfolder_title,
+        service_account: false,
+    )
+
+    subfolder_id = ""
+
+    if lane_context[SharedValues::GDRIVE_FILE_ID]
+        subfolder_id = lane_context[SharedValues::GDRIVE_FILE_ID]
+    else
+        create_google_drive_folder(
+            drive_keyfile: drive_keyfile,
+            service_account: false,
+            parent_folder_id: root_folder,
+            folder_title: subfolder_title
+        )
+        subfolder_id = lane_context[SharedValues::GDRIVE_FILE_ID]
+    end
+
+    upload_to_google_drive(
+        drive_keyfile: drive_keyfile,
+        service_account: false,
+        folder_id: subfolder_id,
+        upload_files: Actions.lane_context['INSTALLER_FILES']
+    )
+
+    uploaded_file_names = lane_context[SharedValues::GDRIVE_UPLOADED_FILE_NAMES]
+    UI.message("Uploaded files: #{uploaded_file_names}")
+
+    UI.success "Build salvo na sub-pasta #{subfolder_title}. Para encontrar mais fácil, use a ordem decrescente"
 end
 
 platform :ios do
@@ -476,7 +541,7 @@ platform :ios do
         load_env(flavor: 'alpha')
         date = lastCommitDateTime
         version_name = '0.0.1'
-        version_code = dateTimeToUtcTimestamp(date)
+        version_code = dateTimeToTimestamp(date)
         package_name = CredentialsManager::AppfileConfig.try_fetch_value(:package_name)
 
         pilot(
@@ -561,6 +626,18 @@ platform :android do
         )
     end
 
+    lane :beta_installer_file do
+        load_env(flavor: 'beta')
+        ensure_release_branch
+        begin
+            flutter_build(build: 'apk')
+        rescue => exception
+            raise exception unless exception.message.include?('Gradle build failed to produce an .apk file. It\'s likely that this file was generated under')
+            UI.important(exception.message)
+        end
+        Actions.lane_context['INSTALLER_FILES'] << "#{android_apk_folder}/app-beta-release.apk"
+    end
+
     desc "Gera o appbundle da **produção** para Android"
     lane :prod do
         load_env(flavor: 'prod')
@@ -581,6 +658,17 @@ platform :android do
             version_name: "#{version_code} (#{version_name})",
             version_code: "#{version_code}"
         )
+    end
+
+    lane :prod_installer_file do
+        ensure_release_branch
+        begin
+            flutter_build(build: 'apk')
+        rescue => exception
+            raise exception unless exception.message.include?('Gradle build failed to produce an .apk file. It\'s likely that this file was generated under')
+            UI.important(exception.message)
+        end
+        Actions.lane_context['INSTALLER_FILES'] << "#{android_apk_folder}/app-prod-release.apk"
     end
 
     lane :alpha do
@@ -642,27 +730,24 @@ platform :android do
         )
     end
 
-    lane :beta_for_github do
-        load_env(flavor: 'beta')
-        ensure_release_branch
-        begin
-            flutter_build(build: 'apk')
-        rescue => exception
-            raise exception unless exception.message.include?('Gradle build failed to produce an .apk file. It\'s likely that this file was generated under')
-            UI.important(exception.message)
-        end
-        Actions.lane_context['GITHUB_RELEASE_ASSETS'] << "#{android_apk_folder}/app-beta-release.apk"
-    end
+    lane :alpha_installer_file do
+        load_env(flavor: 'alpha')
+        ensure_git_branch(branch: 'master')
 
-    lane :prod_for_github do
-        ensure_release_branch
+        date = lastCommitDateTime
+        version_name = '0.0.1'
+        version_code = dateTimeToTimestamp(date)
         begin
-            flutter_build(build: 'apk')
+            flutter_build(
+                build: 'apk',
+                build_number: version_code,
+                build_name: version_name,
+            )
         rescue => exception
             raise exception unless exception.message.include?('Gradle build failed to produce an .apk file. It\'s likely that this file was generated under')
             UI.important(exception.message)
         end
-        Actions.lane_context['GITHUB_RELEASE_ASSETS'] << "#{android_apk_folder}/app-prod-release.apk"
+        Actions.lane_context['INSTALLER_FILES'] << "#{android_apk_folder}/app-alpha-release.apk"
     end
 end
 
