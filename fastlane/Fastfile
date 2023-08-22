@@ -2,6 +2,7 @@ require 'fileutils'
 
 android_apk_folder = './build/app/outputs/flutter-apk'
 android_aab_folder = ''
+Actions.lane_context['INSTALLER_FILES'] = []
 
 private_lane :flutter_version_values do
     version_info = flutter_version(pubspec_location: './pubspec.yaml')
