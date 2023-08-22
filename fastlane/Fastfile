@@ -375,7 +375,7 @@ end
 private_lane :alpha_google_drive_upload do |options|
     load_env(flavor: 'alpha')
 
-    drive_keyfile = './key/google_drive_alpha.json'
+    drive_keyfile = './keys/google_drive_alpha.json'
     root_folder = ENV['GOOGLE_DRIVE_RELEASE_FOLDER_ID']
 
     # TODO: Trocar esses dados por um LaneContext emitido na hora de buildar o alpha
