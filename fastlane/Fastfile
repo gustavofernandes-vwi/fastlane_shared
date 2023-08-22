@@ -739,7 +739,10 @@ platform :android do
         )
     end
 
-    lane :alpha_installer_file do
+    lane :alpha_installer_file do |options|
+        organize_folders = options[:organize_folders] || false
+        delete_older_builds = options[:delete_older_builds] || false
+
         load_env(flavor: 'alpha')
         ensure_git_branch(branch: 'master')
 
@@ -756,7 +759,27 @@ platform :android do
             raise exception unless exception.message.include?('Gradle build failed to produce an .apk file. It\'s likely that this file was generated under')
             UI.important(exception.message)
         end
-        Actions.lane_context['INSTALLER_FILES'] << "#{android_apk_folder}/app-alpha-release.apk"
+
+        file_path = "#{android_apk_folder}/app-alpha-release.apk"
+
+        if organize_folders do
+            date_sp = date.new_offset(-3)
+            build_folder = date_sp.strftime("%F %H:%M") + " (build #{version_code})"
+            new_path = "#{android_apk_folder}/alpha/#{build_folder}"
+
+            File.create("#{android_apk_folder}/alpha") unless File.directory?("#{android_apk_folder}/alpha")
+
+            if delete_older_builds do
+                FileUtils.rm_rf Dir.glob("#{android_apk_folder}/alpha/*")
+            end
+
+            File.create(new_path) unless File.directory?(new_path)
+
+            File.rename file_path "#{new_path}/vivaintra-tv-alpha.apk"
+            file_path = "#{new_path}/vivaintra-tv-alpha.apk"
+        end
+
+        Actions.lane_context['INSTALLER_FILES'] << file_path
     end
 end
 
