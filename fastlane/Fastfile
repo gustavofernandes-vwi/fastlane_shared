@@ -363,7 +363,15 @@ lane :prod_github_release do |options|
     )
 end
 
-lane :alpha_google_drive_upload do |options|
+lane :alpha_google_drive_release do
+    load_env(flavor: 'alpha')
+    ensure_git_branch(branch: 'master')
+
+    Fastlane::LaneManager.cruise_lane('android','alpha_installer_file')
+    alpha_google_drive_upload
+end
+
+private_lane :alpha_google_drive_upload do |options|
     load_env(flavor: 'alpha')
 
     drive_keyfile = './key/google_drive_alpha.json'
