@@ -777,6 +777,8 @@ platform :android do
 
             File.rename file_path "#{new_path}/vivaintra-tv-alpha.apk"
             file_path = "#{new_path}/vivaintra-tv-alpha.apk"
+
+            UI.message "Nova build salva em #{file_path}"
         end
 
         Actions.lane_context['INSTALLER_FILES'] << file_path
