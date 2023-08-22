@@ -775,13 +775,13 @@ platform :android do
 
             Dir.mkdir(new_path.sub('./', '../')) unless File.directory?(new_path.sub('./', '../'))
 
-            File.rename "#{file_path}" "#{new_path.sub('./', '../')}/vivaintra-tv-alpha.apk"
+            File.rename file_path, "#{new_path.sub('./', '../')}/vivaintra-tv-alpha.apk"
             file_path = "#{new_path}/vivaintra-tv-alpha.apk"
 
             UI.message "Nova build salva em #{file_path}"
         end
 
-        Actions.lane_context['INSTALLER_FILES'] << "#{file_path}"
+        Actions.lane_context['INSTALLER_FILES'] << file_path
     end
 end
 
