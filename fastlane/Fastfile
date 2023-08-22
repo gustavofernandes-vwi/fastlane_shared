@@ -773,9 +773,9 @@ platform :android do
                 FileUtils.rm_rf Dir.glob("#{android_apk_folder}/alpha/*")
             end
 
-            Dir.mkdir(new_path) unless File.directory?(new_path)
+            Dir.mkdir(new_path.sub('./', './fastlane/')) unless File.directory?(new_path.sub('./', './fastlane/'))
 
-            File.rename file_path "#{new_path}/vivaintra-tv-alpha.apk"
+            File.rename file_path "#{new_path.sub('./', './fastlane/')}/vivaintra-tv-alpha.apk"
             file_path = "#{new_path}/vivaintra-tv-alpha.apk"
 
             UI.message "Nova build salva em #{file_path}"
