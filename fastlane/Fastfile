@@ -767,13 +767,13 @@ platform :android do
             build_folder = date_sp.strftime("%F %H:%M") + " (build #{version_code})"
             new_path = "#{android_apk_folder}/alpha/#{build_folder}"
 
-            File.create("#{android_apk_folder}/alpha") unless File.directory?("#{android_apk_folder}/alpha")
+            Dir.mkdir("#{android_apk_folder}/alpha") unless File.directory?("#{android_apk_folder}/alpha")
 
             if delete_older_builds then
                 FileUtils.rm_rf Dir.glob("#{android_apk_folder}/alpha/*")
             end
 
-            File.create(new_path) unless File.directory?(new_path)
+            Dir.mkdir(new_path) unless File.directory?(new_path)
 
             File.rename file_path "#{new_path}/vivaintra-tv-alpha.apk"
             file_path = "#{new_path}/vivaintra-tv-alpha.apk"
