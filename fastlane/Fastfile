@@ -762,14 +762,14 @@ platform :android do
 
         file_path = "#{android_apk_folder}/app-alpha-release.apk"
 
-        if organize_folders do
+        if organize_folders then
             date_sp = date.new_offset(-3)
             build_folder = date_sp.strftime("%F %H:%M") + " (build #{version_code})"
             new_path = "#{android_apk_folder}/alpha/#{build_folder}"
 
             File.create("#{android_apk_folder}/alpha") unless File.directory?("#{android_apk_folder}/alpha")
 
-            if delete_older_builds do
+            if delete_older_builds then
                 FileUtils.rm_rf Dir.glob("#{android_apk_folder}/alpha/*")
             end
 
