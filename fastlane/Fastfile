@@ -29,7 +29,7 @@ private_lane :check_valid_build_number do |options|
 
     version_code = Actions.lane_context['FLUTTER_VERSION_CODE']
 
-    if latest_version_code == '' then
+    if latest_version_code == nil then
         return
     end
 
