@@ -65,7 +65,7 @@ module Fastlane
               env_name: "FL_ENSURE_ANDROID_CHANGELOG_LIMIT_VALUE",
               description: "Character limit",
               optional: true,
-              type: Fixnum,
+              type: Integer,
               default_value: 500,
             ),
           ]
