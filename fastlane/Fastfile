@@ -429,7 +429,7 @@ platform :ios do
         package_name = CredentialsManager::AppfileConfig.try_fetch_value(:package_name)
         if production
             latest_build_number = app_store_connect_api_key(
-                api_key_path: 'fastlane/keys/app-store-key.json',
+                key_filepath: 'fastlane/keys/app-store-key.json',
                 app_identifier: package_name
             )
         else
@@ -450,6 +450,7 @@ platform :ios do
     lane :beta do
         load_env(flavor: 'beta')
         ensure_release_branch
+        validate_build_number production: false
         # prepare_certificates
         flutter_build(build_args: ["--flavor=beta"])
         gym(
@@ -491,6 +492,7 @@ platform :ios do
     lane :prod do
         load_env(flavor: 'prod')
         ensure_release_branch
+        validate_build_number
         # prepare_certificates
         flutter_build(build_args: ["--flavor=prod"])
         gym(
