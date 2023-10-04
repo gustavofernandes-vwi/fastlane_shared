@@ -423,7 +423,7 @@ platform :ios do
 
     desc "Certifica que o número de build atual ainda não foi usado e é maior que o mais recente"
     lane :validate_build_number do |options|
-        production = options[:production] || true
+        production = options[:production] != nil ? options[:production] : true
         latest_build_number = nil
         
         package_name = CredentialsManager::AppfileConfig.try_fetch_value(:package_name)
