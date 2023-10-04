@@ -428,8 +428,8 @@ platform :ios do
         
         package_name = CredentialsManager::AppfileConfig.try_fetch_value(:package_name)
         if production
-            latest_build_number = app_store_connect_api_key(
-                key_filepath: 'fastlane/keys/app-store-key.json',
+            latest_build_number = app_store_build_number(
+                api_key_path: 'fastlane/keys/app-store-key.json',
                 app_identifier: package_name
             )
         else
