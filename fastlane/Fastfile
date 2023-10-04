@@ -443,7 +443,7 @@ platform :ios do
         pilot(
             # skip_submission: true,
             skip_waiting_for_build_processing: true,
-            username: ENV['APPSTORE_CONNECT_USERNAME'],
+            api_key_path: 'fastlane/keys/app-store-key.json',
             changelog: (File.read(Actions.lane_context['CHANGELOG_IOS_FILE'].sub! './fastlane/', '') rescue ""),
         )
     end
@@ -486,7 +486,7 @@ platform :ios do
         FileUtils.copy_file changelog_path, "metadata/ios/deliver/pt-BR/release_notes.txt"
         deliver(
             metadata_path: "fastlane/metadata/ios/deliver",
-            username: ENV['APPSTORE_CONNECT_USERNAME'],
+            api_key_path: 'fastlane/keys/app-store-key.json',
             skip_screenshots: true,
             force: true,
         )
@@ -498,6 +498,7 @@ platform :ios do
         # Se for forçar o número da versão que for liberar, daí precisa checar a branch
         # ensure_release_branch
         deliver(
+            api_key_path: 'fastlane/keys/app-store-key.json',
             submit_for_review: true,
             automatic_release: false,
 
@@ -566,21 +567,21 @@ platform :ios do
     lane :prepare_certificates do
         package_name = CredentialsManager::AppfileConfig.try_fetch_value(:package_name)
         cert(
-            username: ENV['APPSTORE_CONNECT_USERNAME'],
+            api_key_path: 'fastlane/keys/app-store-key.json',
             keychain_password: ENV['KEYCHAIN_PASSWORD'],
             output_path: 'fastlane/keys/',
             generate_apple_certs: true,
         )
         sigh(
             # readonly: true,
-            username: ENV['APPSTORE_CONNECT_USERNAME'],
+            api_key_path: 'fastlane/keys/app-store-key.json',
             app_identifier: package_name,
             output_path: 'fastlane/keys/',
         )
         if (File.exist?("../ios/OneSignalNotificationServiceExtension/NotificationService.swift")) then
             sigh(
                 # readonly: true,
-                username: ENV['APPSTORE_CONNECT_USERNAME'],
+                api_key_path: 'fastlane/keys/app-store-key.json',
                 app_identifier: "#{package_name}.OneSignalNotificationServiceExtension",
                 output_path: 'fastlane/keys/',
             )
