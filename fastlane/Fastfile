@@ -485,6 +485,7 @@ platform :ios do
             build_number: "#{version_code}",
             app_identifier: package_name,
             groups: ['Vivaweb'],
+            api_key_path: 'fastlane/keys/app-store-key.json',
         )
     end
 
@@ -565,6 +566,7 @@ platform :ios do
             app_version: version_name,
             build_number: "#{version_code}",
             changelog: 'Sem informações sobre essa versão no momento',
+            api_key_path: 'fastlane/keys/app-store-key.json',
         )
     end
 
@@ -582,6 +584,7 @@ platform :ios do
             distribute_only: true,
             app_identifier: package_name,
             groups: ['Devs'],
+            api_key_path: 'fastlane/keys/app-store-key.json',
         )
     end
 
