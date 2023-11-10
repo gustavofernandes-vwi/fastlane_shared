@@ -521,7 +521,7 @@ platform :ios do
         # ensure_release_branch
         deliver(
             api_key_path: 'fastlane/keys/app-store-key.json',
-            precheck_include_in_app_purchases: false
+            precheck_include_in_app_purchases: false,
             submit_for_review: true,
             automatic_release: false,
 
