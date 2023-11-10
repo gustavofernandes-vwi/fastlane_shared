@@ -576,7 +576,6 @@ platform :ios do
         package_name = CredentialsManager::AppfileConfig.try_fetch_value(:package_name)
 
         pilot(
-            username: ENV['APPSTORE_CONNECT_USERNAME'],
             app_platform: 'ios',
             distribute_external: true,
             distribute_only: true,
