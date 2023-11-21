@@ -4,11 +4,14 @@
 tasks.each do |task|
     line_url = task.public_url || task.url
     line_id = ""
-    line_id = "[#{task.unique_id}](#{line_url}) " if task.unique_id != nil
+    line_id = "[#{task.unique_id}](#{line_url})"
+
+    line_origin = ""
+    origin = task.get_property "Origem ID"
+    line_origin = "(#{origin}) "
 
     line_title = task.title.to_s
-    line_title = "[#{task.title}](#{line_url})" if task.unique_id == nil
 -%>
-<%=line_id%><%=line_title%>
+<%=line_id%> <%=line_origin%><%=line_title%>
 
 <% end %>
