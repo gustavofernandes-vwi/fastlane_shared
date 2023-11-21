@@ -1,8 +1,14 @@
-# Release notes <%=version.title.title%> TEST
+# Release notes <%=version.title.title%>
 
---------
+<%
+tasks.each do |task|
+    line_url = @public_url || @url
+    line_id = ""
+    line_id = "[#@unique_id](#{line_url}) " if @unique_id != nil
 
-<% tasks.each do |task| -%>
-<%=task.format_line%>
+    line_title = @title.to_s
+    line_title = "[#{title}](#{line_url})" if @unique_id == nil
+-%>
+<%=line_id%><%=line_title%>
 
 <% end %>
