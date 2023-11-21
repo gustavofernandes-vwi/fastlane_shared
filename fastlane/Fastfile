@@ -77,6 +77,16 @@ lane :download_notion_notes do
     File.write("./metadata/notion/changelog.md", text)
 end
 
+lane :download_notion_version_report do
+    version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
+    text = notion_release_notes(
+        version: version_name,
+        template: File.join(File.dirname(File.expand_path(__FILE__)), './templates/notion_relatorio_chat.erb')
+    )
+    
+    File.write("./metadata/notion/report.md", text)
+end
+
 desc "Exibe a data e a timestamp do último commit"
 lane :last_commit do
     date = lastCommitDateTime
