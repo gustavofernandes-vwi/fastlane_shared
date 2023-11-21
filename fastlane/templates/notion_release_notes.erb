@@ -7,7 +7,11 @@ tasks.each do |task|
     line_id = "[#{task.unique_id}](#{line_url})"
 
     line_origin = ""
-    origin = if task.properties["Origem ID"].text != "" ? task.properties["Origem ID"].text : nil
+    origin = if (task.properties["Origem ID"].text != "")
+          task.properties["Origem ID"].text
+        else
+            nil
+        end
     if (origin != nil) then
         line_origin = "(#{origin}) "
     end
