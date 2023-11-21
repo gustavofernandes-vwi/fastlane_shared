@@ -7,7 +7,7 @@ tasks.each do |task|
     line_id = "[#{task.unique_id}](#{line_url})"
 
     line_origin = ""
-    origin = task.get_property "Origem ID"
+    origin = task.properties["Origem ID"]
     line_origin = "(#{origin}) "
 
     line_title = task.title.to_s
