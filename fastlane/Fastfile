@@ -73,10 +73,6 @@ lane :download_notion_notes do
         version: version_name,
     )
     
-    # File.write(
-    #     "./metadata/notion/changelog.md",
-    #     "# Release notes - Version #{version_name}\n\n",
-    # )
     File.write("./metadata/notion/changelog.md", text)
 end
 
