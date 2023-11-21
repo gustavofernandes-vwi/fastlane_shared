@@ -71,6 +71,7 @@ lane :download_notion_notes do
     version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
     text = notion_release_notes(
         version: version_name,
+        template: File.join(File.dirname(File.expand_path(__FILE__)), '../templates/notion_release_notes.erb')
     )
     
     File.write("./metadata/notion/changelog.md", text)
