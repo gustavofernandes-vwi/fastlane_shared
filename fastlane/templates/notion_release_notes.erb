@@ -13,7 +13,17 @@ tasks.each do |task|
             nil
         end
     if (origin != nil) then
-        line_origin = "(#{origin}) "
+        line_origin = "[#{origin}] "
+    end
+
+    origin_url = if (task.properties["Origem URL"].text != "")
+          task.properties["Origem URL"].text
+        else
+            nil
+        end
+    if (origin_url != nil) then
+        origin = if origin != nil then origin else "Origem"
+        line_origin = "[#{origin}](#{origin_url}) "
     end
 
     line_title = task.title.to_s
