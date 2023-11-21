@@ -16,8 +16,8 @@ tasks.each do |task|
         line_origin = "[#{origin}] "
     end
 
-    origin_url = if (task.properties["Origem URL"].text != "")
-          task.properties["Origem URL"].text
+    origin_url = if (task.properties["Origem URL"].url != "")
+          task.properties["Origem URL"].url
         else
             nil
         end
