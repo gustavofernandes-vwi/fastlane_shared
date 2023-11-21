@@ -1,0 +1,36 @@
+# Release notes <%=version.title.title%>
+
+<%
+tasks.each do |task|
+    line_url = task.public_url || task.url
+    line_id = ""
+    line_id = "[#{task.unique_id}]( #{line_url} )"
+
+    line_origin = ""
+    origin = if (task.properties["Origem ID"].text != "")
+          task.properties["Origem ID"].text
+        else
+            nil
+        end
+    if (origin != nil) then
+        line_origin = "[#{origin}] "
+    end
+
+    origin_url = if (task.properties["Origem URL"].url != "")
+          task.properties["Origem URL"].url
+        else
+            nil
+        end
+    if (origin_url != nil) then
+        if (origin != nil) then
+            line_origin = "[#{origin}]( #{origin_url} ) "
+        else
+            line_origin = "< #{origin_url} > "
+        end
+    end
+
+    line_title = task.title.to_s
+-%>
+<%=line_id%> <%=line_origin%><%=line_title%>
+
+<% end %>
