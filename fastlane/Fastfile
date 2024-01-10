@@ -157,6 +157,8 @@ lane :beta_all do |options|
     skip_github = options[:skip_github] || false
     skip_github_build = options[:skip_github_build] || false
     skip_build = options[:skip_build] || false
+    skip_ios_build = options[:skip_ios_build] || false
+    skip_android_build = options[:skip_android_build] || false
     release = options[:release] || false
     
     load_env(flavor: 'beta')
@@ -168,22 +170,22 @@ lane :beta_all do |options|
     ensure_release_branch
 
     if !skip_build
-        if !skip_ios
+        if !skip_ios && !skip_ios_build
             Fastlane::LaneManager.cruise_lane('ios','validate_build_number', production: false)
         end
     
-        if !skip_android
+        if !skip_android && !skip_android_build
             Fastlane::LaneManager.cruise_lane('android','validate_build_number', track: 'internal')
             ensure_android_changelog_limit
         end
     
-        if !skip_ios
+        if !skip_ios && !skip_ios_build
             # Build for iOS and upload to AppStore Connect
             Fastlane::LaneManager.cruise_lane('ios','beta')
             commit_generated_files
         end
         
-        if !skip_android
+        if !skip_android && !skip_android_build
             # Build for Android and upload to Google Play Console
             Fastlane::LaneManager.cruise_lane('android','beta')
             commit_generated_files
