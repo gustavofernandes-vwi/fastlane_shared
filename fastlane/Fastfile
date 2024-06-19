@@ -20,6 +20,12 @@ private_lane :load_env do |options|
     Dotenv.load(envs[flavor])
 end
 
+private_lane :platforms do |options|
+    flavor = options[:flavor]
+    load_env(flavor: flavor)
+    ENV.fetch('PLATFORMS').split(',')
+end
+
 desc "Exibe o código e nome de versão atual do app, conforme pubspec.yaml"
 lane :version do
     UI.message Actions.lane_context['FLUTTER_VERSION_NAME']
@@ -278,8 +284,8 @@ platform :all do
     desc "Esta é a lane de mais alto nível, que chama outras lanes para que tudo que precisa ser feito aconteça com um único comando."
     desc "O tempo de execução dessa lane é altamente elevado."
     lane :beta do |options|
-        skip_ios = options[:skip_ios] || false
-        skip_android = options[:skip_android] || false
+        skip_ios = (options[:skip_ios] || false) && platforms(flavor: 'beta').include? 'ios'
+        skip_android = (options[:skip_android] || false) && platforms(flavor: 'beta').include? 'android'
         skip_github = options[:skip_github] || false
         skip_github_build = options[:skip_github_build] || false
         skip_build = options[:skip_build] || false
@@ -344,8 +350,8 @@ platform :all do
     desc "Esta é a lane de mais alto nível, que chama outras lanes para que tudo que precisa ser feito aconteça com um único comando."
     desc "O tempo de execução dessa lane é altamente elevado."
     lane :prod do |options|
-        skip_ios = options[:skip_ios] || false
-        skip_android = options[:skip_android] || false
+        skip_ios = (options[:skip_ios] || false) && platforms(flavor: 'prod').include? 'ios'
+        skip_android = (options[:skip_android] || false) && platforms(flavor: 'prod').include? 'android'
         skip_github = options[:skip_github] || false
 
         load_env(flavor: 'prod')
@@ -385,8 +391,8 @@ platform :all do
     desc "Gera as builds **alpha** para ambas as plataformas e faz upload para as ferramentas de distribuição correspondentes."
     desc "As builds são numeradas automaticamente de acordo com o último commit e também são liberadas automaticamente"
     lane :alpha do |options|
-        skip_ios = options[:skip_ios] || false
-        skip_android = options[:skip_android] || false
+        skip_ios = (options[:skip_ios] || false) && platforms(flavor: 'alpha').include? 'ios'
+        skip_android = (options[:skip_android] || false) && platforms(flavor: 'alpha').include? 'android'
         skip_google_drive = options[:skip_android] || true
 
         load_env(flavor: 'alpha')
