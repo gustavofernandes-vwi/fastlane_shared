@@ -278,6 +278,52 @@ private_lane :alpha_google_drive_upload do |options|
     UI.success "Build salvo na sub-pasta #{subfolder_title}. Para encontrar mais fácil, use a ordem decrescente"
 end
 
+lane :test_keys do |options|
+    skip_ios = options[:skip_ios] || false
+    skip_android = options[:skip_android] || false
+
+    # GITHUB_TOKEN ------------------------------------------------------------
+    github_token = ENV["GITHUB_TOKEN"]
+    UI.abort_with_message! 'key "GITHUB_TOKEN" not informed' unless github_token && !github_token.empty?
+    github_api(
+        server_url: "https://api.github.com",
+        api_token: github_token,
+        http_method: "GET",
+        path: "/repos/#{ENV["REPOSITORY_NAME"]}/readme",
+        body: { ref: "master" },
+        error_handlers: {
+            '*' => proc do |result|
+                UI.abort_with_message! 'key "GITHUB_TOKEN" test failed'
+            end
+        },
+    )
+
+    # AppStore Credentials ----------------------------------------------------
+    if !skip_ios
+        begin
+            package_name = CredentialsManager::AppfileConfig.try_fetch_value(:package_name)
+            latest_testflight_build_number(
+                api_key_path: 'fastlane/keys/app-store-key.json',
+                app_identifier: package_name
+            )
+        rescue => exception
+            UI.error exception
+            UI.abort_with_message! 'AppStore Credentials test failed'
+        end
+    end
+    
+    # Google Play Credentials -------------------------------------------------
+    if !skip_android
+        begin
+            google_play_track_version_codes
+        rescue => exception
+            UI.abort_with_message! 'Google Play Credentials test failed'
+        end
+    end
+
+    UI.success "All access keys test passed"
+end
+
 platform :all do
     desc "Gera as builds **Beta** para ambas as plataformas e faz upload para as ferramentas de distribuição correspondentes."
     desc "Também cria a release no GitHub e gera builds executáveis (apk do android) para anexar na release."
@@ -294,6 +340,8 @@ platform :all do
         release = options[:release] || false
         
         load_env(flavor: 'beta')
+
+        test_keys(skip_ios: skip_ios, skip_android: skip_android)
 
         if !skip_build
             make_changelog(flavor: 'beta')
@@ -356,6 +404,8 @@ platform :all do
 
         load_env(flavor: 'prod')
 
+        test_keys(skip_ios: skip_ios, skip_android: skip_android)
+
         make_changelog(flavor: 'prod')
         check_changelogs(options)
         ensure_release_branch
@@ -398,6 +448,8 @@ platform :all do
         load_env(flavor: 'alpha')
 
         ensure_git_branch(branch: 'master')
+
+        test_keys(skip_ios: skip_ios, skip_android: skip_android)
 
         if !skip_ios
             # Build for iOS and upload to AppStore Connect
