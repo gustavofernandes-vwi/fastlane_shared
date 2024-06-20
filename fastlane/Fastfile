@@ -23,6 +23,7 @@ end
 private_lane :platforms do |options|
     flavor = options[:flavor]
     load_env(flavor: flavor)
+    UI.message ENV.fetch('PLATFORMS').split(',')
     ENV.fetch('PLATFORMS').split(',')
 end
 
