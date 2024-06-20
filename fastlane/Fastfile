@@ -218,7 +218,7 @@ lane :prod_github_release do |options|
 end
 
 private_lane :google_drive_upload do |options|
-    load_env(options[:flavor])
+    load_env(flavor: options[:flavor])
     app_name = ENV.fetch('APP_NAME')
     version = Actions.lane_context['LAST_BUILD_VERSION_NAME']
     build = Actions.lane_context['LAST_BUILD_NUMBER']
