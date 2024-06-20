@@ -334,6 +334,7 @@ lane :test_keys do |options|
         begin
             google_play_track_version_codes
         rescue => exception
+            UI.error exception
             UI.abort_with_message! 'Google Play Credentials test failed'
         end
     end
