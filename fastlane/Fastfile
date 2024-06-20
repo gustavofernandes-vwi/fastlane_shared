@@ -142,6 +142,7 @@ private_lane :discard_git_changes do
     reset_git_repo(
         skip_clean: true,
         disregard_gitignore: false,
+        force: true,
     )
 end
 
