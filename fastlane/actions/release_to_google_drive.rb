@@ -9,7 +9,7 @@ module Fastlane
         version_folder_id = find_or_create_folder(app_folder_id, params[:version_name], drive_keyfile)
         build_folder_id = find_or_create_folder(version_folder_id, "#{params[:build_number]}", drive_keyfile)
 
-        GoogleDrive.upload_to_google_drive(
+        Actions::UploadToGoogleDriveAction.run(
           drive_keyfile: drive_keyfile,
           service_account: false,
           folder_id: build_folder_id,
@@ -18,7 +18,7 @@ module Fastlane
       end
 
       def self.find_or_create_folder(parend_id, folder_name, drive_keyfile)
-        GoogleDrive.find_google_drive_file_by_title(
+        Actions::FindGoogleDriveFileByTitleAction.run(
           drive_keyfile: drive_keyfile,
           parent_folder_id: parend_id,
           file_title: folder_name,
@@ -29,7 +29,7 @@ module Fastlane
         if lane_context[SharedValues::GDRIVE_FILE_ID]
           subfolder_id = lane_context[SharedValues::GDRIVE_FILE_ID]
         else
-          GoogleDrive.create_google_drive_folder(
+          Actions::CreateGoogleDriveFolderAction.run(
             drive_keyfile: drive_keyfile,
             service_account: false,
             parent_folder_id: parend_id,
