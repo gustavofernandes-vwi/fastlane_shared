@@ -525,11 +525,6 @@ platform :all do
             # Release Android app on Google Play Console
             Fastlane::LaneManager.cruise_lane('android','release_alpha')
         end
-
-        if !skip_google_drive
-            # Upload apk to google drive
-            alpha_google_drive_upload
-        end
     end
 end
 
