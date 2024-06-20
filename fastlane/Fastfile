@@ -372,7 +372,11 @@ platform :all do
         
         load_env(flavor: 'beta')
 
-        test_keys(skip_ios: skip_ios, skip_android: skip_android)
+        test_keys(
+            skip_ios: skip_ios,
+            skip_android: skip_android,
+            skip_google_drive: skip_google_drive,
+        )
 
         if !skip_build
             make_changelog(flavor: 'beta')
@@ -447,7 +451,11 @@ platform :all do
 
         load_env(flavor: 'prod')
 
-        test_keys(skip_ios: skip_ios, skip_android: skip_android)
+        test_keys(
+            skip_ios: skip_ios,
+            skip_android: skip_android,
+            skip_google_drive: skip_google_drive,
+        )
 
         make_changelog(flavor: 'prod')
         check_changelogs(options)
@@ -501,7 +509,11 @@ platform :all do
 
         ensure_git_branch(branch: 'master')
 
-        test_keys(skip_ios: skip_ios, skip_android: skip_android)
+        test_keys(
+            skip_ios: skip_ios,
+            skip_android: skip_android,
+            skip_google_drive: skip_google_drive,
+        )
 
         if !skip_ios
             # Build for iOS and upload to AppStore Connect
