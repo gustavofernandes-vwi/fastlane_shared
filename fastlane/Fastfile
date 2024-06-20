@@ -346,7 +346,7 @@ lane :test_keys do |options|
         folder_id = ENV["FL_RELEASE_TO_GOOGLE_DRIVE_ROOT_FOLDER"]
         UI.abort_with_message! '"FL_RELEASE_TO_GOOGLE_DRIVE_ROOT_FOLDER" not informed' unless folder_id && !folder_id.empty?
         
-        drive_keyfile = './fastlane/keys/google_drive.json'
+        drive_keyfile = './keys/google_drive.json'
         UI.abort_with_message! "Google Drive key \"#{drive_keyfile}\" not found" unless File.exist?(drive_keyfile)
     end
 end
