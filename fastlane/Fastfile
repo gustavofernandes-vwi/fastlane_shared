@@ -217,6 +217,22 @@ lane :prod_github_release do |options|
     )
 end
 
+private_lane :google_drive_upload do |options|
+    load_env(options[:flavor])
+    app_name = ENV.fetch('APP_NAME')
+    version = Actions.lane_context['LAST_BUILD_VERSION_NAME']
+    build = Actions.lane_context['LAST_BUILD_NUMBER']
+    drive_keyfile = './fastlane/keys/google_drive_alpha.json'
+
+    release_to_google_drive(
+        drive_keyfile: drive_keyfile,
+        upload_files: Actions.lane_context['INSTALLER_FILES'],
+        app_name: app_name,
+        version_name: version,
+        build_number: build,
+    )
+end
+
 lane :alpha_google_drive_release do
     load_env(flavor: 'alpha')
     ensure_git_branch(branch: 'master')
@@ -333,10 +349,15 @@ platform :all do
         skip_ios = (options[:skip_ios] || false) && platforms(flavor: 'beta').include? 'ios'
         skip_android = (options[:skip_android] || false) && platforms(flavor: 'beta').include? 'android'
         skip_github = options[:skip_github] || false
-        skip_github_build = options[:skip_github_build] || false
+        skip_google_drive = options[:skip_google_drive] || true
+
         skip_build = options[:skip_build] || false
         skip_ios_build = options[:skip_ios_build] || false
         skip_android_build = options[:skip_android_build] || false
+        skip_github_build = options[:skip_github_build] || false
+
+        build_installer = !(skip_github || skip_github_build) || !skip_google_drive
+
         release = options[:release] || false
         
         load_env(flavor: 'beta')
@@ -370,11 +391,18 @@ platform :all do
                 Fastlane::LaneManager.cruise_lane('android','beta')
                 commit_generated_files
             end
-            
-            if !skip_github
-                # Build executables (android apk) and uploads to newly created github release
-                beta_github_release options
+
+            if build_installer
+                Fastlane::LaneManager.cruise_lane('android','beta_installer_file')
                 commit_generated_files
+            end
+
+            if !skip_github
+                beta_github_release(skip_github_build: true)
+            end
+
+            if !skip_google_drive
+                google_drive_upload(flavor: 'beta')
             end
         end
 
@@ -401,6 +429,11 @@ platform :all do
         skip_ios = (options[:skip_ios] || false) && platforms(flavor: 'prod').include? 'ios'
         skip_android = (options[:skip_android] || false) && platforms(flavor: 'prod').include? 'android'
         skip_github = options[:skip_github] || false
+        skip_google_drive = options[:skip_google_drive] || true
+
+        skip_github_build = false
+
+        build_installer = !(skip_github || skip_github_build) || !skip_google_drive
 
         load_env(flavor: 'prod')
 
@@ -431,10 +464,17 @@ platform :all do
             commit_generated_files
         end
         
+        if build_installer
+            Fastlane::LaneManager.cruise_lane('android','prod_installer_file')
+        end
+
         if !skip_github
-            # Build executables (android apk) and uploads to newly created github release
-            prod_github_release options
+            prod_github_release(skip_github_build: true)
             commit_generated_files
+        end
+
+        if !skip_google_drive
+            google_drive_upload(flavor: 'prod')
         end
     end
 
@@ -443,7 +483,9 @@ platform :all do
     lane :alpha do |options|
         skip_ios = (options[:skip_ios] || false) && platforms(flavor: 'alpha').include? 'ios'
         skip_android = (options[:skip_android] || false) && platforms(flavor: 'alpha').include? 'android'
-        skip_google_drive = options[:skip_android] || true
+        skip_google_drive = options[:skip_google_drive] || true
+
+        build_installer = !skip_google_drive
 
         load_env(flavor: 'alpha')
 
@@ -463,10 +505,13 @@ platform :all do
             discard_git_changes
         end
 
-        if !skip_google_drive
-            # Build apk
-            Fastlane::LaneManager.cruise_lane('android','alpha_installer_file')
+        if build_installer
+            Fastlane::LaneManager.cruise_lane('android', 'alpha_installer_file')
             discard_git_changes
+        end
+
+        if !skip_google_drive
+            google_drive_upload(flavor: 'alpha')
         end
 
         # All builds uploaded, time to release
@@ -529,6 +574,8 @@ platform :ios do
             export_method: "app-store",
             export_xcargs: "-allowProvisioningUpdates",
         )
+        Actions.lane_context['LAST_BUILD_VERSION_NAME'] = Actions.lane_context['FLUTTER_VERSION_NAME']
+        Actions.lane_context['LAST_BUILD_NUMBER'] = Actions.lane_context['FLUTTER_VERSION_CODE']
         pilot(
             # skip_submission: true,
             skip_waiting_for_build_processing: true,
@@ -541,8 +588,8 @@ platform :ios do
         load_env(flavor: 'beta')
         commit_generated_files
 
-        version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
-        version_code = Actions.lane_context['FLUTTER_VERSION_CODE']
+        version_name = Actions.lane_context['LAST_BUILD_VERSION_NAME']
+        version_code = Actions.lane_context['LAST_BUILD_NUMBER']
         package_name = CredentialsManager::AppfileConfig.try_fetch_value(:package_name)
 
         pilot(
@@ -574,6 +621,8 @@ platform :ios do
         changelog_path = Actions.lane_context['CHANGELOG_IOS_FILE'].sub! './fastlane/', ''
         FileUtils.mkdir_p "metadata/ios/deliver/pt-BR"
         FileUtils.copy_file changelog_path, "metadata/ios/deliver/pt-BR/release_notes.txt"
+        Actions.lane_context['LAST_BUILD_VERSION_NAME'] = Actions.lane_context['FLUTTER_VERSION_NAME']
+        Actions.lane_context['LAST_BUILD_NUMBER'] = Actions.lane_context['FLUTTER_VERSION_CODE']
         deliver(
             metadata_path: "fastlane/metadata/ios/deliver",
             api_key_path: 'fastlane/keys/app-store-key.json',
@@ -631,6 +680,8 @@ platform :ios do
             export_xcargs: "-allowProvisioningUpdates",
         )
         # enable_automatic_code_signing(path: 'ios/Runner.xcodeproj')
+        Actions.lane_context['LAST_BUILD_VERSION_NAME'] = version_name
+        Actions.lane_context['LAST_BUILD_NUMBER'] = version_code
         pilot(
             app_version: version_name,
             build_number: "#{version_code}",
@@ -713,6 +764,8 @@ platform :android do
         end
         version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
         version_code = Actions.lane_context['FLUTTER_VERSION_CODE']
+        Actions.lane_context['LAST_BUILD_VERSION_NAME'] = version_name
+        Actions.lane_context['LAST_BUILD_NUMBER'] = version_code
         supply(
             track: 'internal',
             aab: './build/app/outputs/bundle/betaRelease/app-beta-release.aab',
@@ -720,14 +773,17 @@ platform :android do
             version_name: "#{version_code} (#{version_name})",
             version_code: "#{version_code}",
         )
+
+        Actions.lane_context['LAST_BUILD_VERSION_NAME'] = version_name
+        Actions.lane_context['LAST_BUILD_NUMBER'] = version_code
     end
 
     lane :release_beta do
         load_env(flavor: 'beta')
         commit_generated_files
         
-        version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
-        version_code = Actions.lane_context['FLUTTER_VERSION_CODE']
+        version_name = Actions.lane_context['LAST_BUILD_VERSION_NAME']
+        version_code = Actions.lane_context['LAST_BUILD_NUMBER']
 
         supply(
             skip_upload_aab: true,
@@ -754,6 +810,9 @@ platform :android do
             UI.important(exception.message)
         end
         Actions.lane_context['INSTALLER_FILES'] << "#{android_apk_folder}/app-beta-release.apk"
+
+        Actions.lane_context['LAST_BUILD_VERSION_NAME'] = Actions.lane_context['FLUTTER_VERSION_NAME']
+        Actions.lane_context['LAST_BUILD_NUMBER'] = Actions.lane_context['FLUTTER_VERSION_CODE']
     end
 
     desc "Gera o appbundle da **produção** para Android"
@@ -770,6 +829,8 @@ platform :android do
         end
         version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
         version_code = Actions.lane_context['FLUTTER_VERSION_CODE']
+        Actions.lane_context['LAST_BUILD_VERSION_NAME'] = version_name
+        Actions.lane_context['LAST_BUILD_NUMBER'] = version_code
         supply(
             aab: './build/app/outputs/bundle/prodRelease/app-prod-release.aab',
             release_status: 'draft',
@@ -787,6 +848,9 @@ platform :android do
             UI.important(exception.message)
         end
         Actions.lane_context['INSTALLER_FILES'] << "#{android_apk_folder}/app-prod-release.apk"
+
+        Actions.lane_context['LAST_BUILD_VERSION_NAME'] = Actions.lane_context['FLUTTER_VERSION_NAME']
+        Actions.lane_context['LAST_BUILD_NUMBER'] = Actions.lane_context['FLUTTER_VERSION_CODE']
     end
 
     lane :alpha do
@@ -808,6 +872,8 @@ platform :android do
             UI.important(exception.message)
         end
 
+        Actions.lane_context['LAST_BUILD_VERSION_NAME'] = version_name
+        Actions.lane_context['LAST_BUILD_NUMBER'] = version_code
 
         File.open("./metadata/android/pt-BR/changelogs/#{version_code}.txt", "w") {}
         File.write(
@@ -868,6 +934,9 @@ platform :android do
             raise exception unless exception.message.include?('Gradle build failed to produce an .apk file. It\'s likely that this file was generated under')
             UI.important(exception.message)
         end
+
+        Actions.lane_context['LAST_BUILD_VERSION_NAME'] = version_name
+        Actions.lane_context['LAST_BUILD_NUMBER'] = version_code
 
         file_path = "#{android_apk_folder}/app-alpha-release.apk"
 
