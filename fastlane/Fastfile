@@ -360,7 +360,7 @@ platform :all do
         skip_ios = (options[:skip_ios] || false) || !platforms(flavor: 'beta').include?('ios')
         skip_android = (options[:skip_android] || false) || !platforms(flavor: 'beta').include?('android')
         skip_github = options[:skip_github] || false
-        skip_google_drive = options[:skip_google_drive] || true
+        skip_google_drive = options[:skip_google_drive] || false
 
         skip_build = options[:skip_build] || false
         skip_ios_build = options[:skip_ios_build] || false
@@ -444,7 +444,7 @@ platform :all do
         skip_ios = (options[:skip_ios] || false) || !platforms(flavor: 'prod').include?('ios')
         skip_android = (options[:skip_android] || false) || !platforms(flavor: 'prod').include?('android')
         skip_github = options[:skip_github] || false
-        skip_google_drive = options[:skip_google_drive] || true
+        skip_google_drive = options[:skip_google_drive] || false
 
         skip_github_build = false
 
@@ -502,7 +502,7 @@ platform :all do
     lane :alpha do |options|
         skip_ios = (options[:skip_ios] || false) || !platforms(flavor: 'alpha').include?('ios')
         skip_android = (options[:skip_android] || false) || !platforms(flavor: 'alpha').include?('android')
-        skip_google_drive = options[:skip_google_drive] || true
+        skip_google_drive = options[:skip_google_drive] || false
 
         build_installer = !skip_google_drive
 
