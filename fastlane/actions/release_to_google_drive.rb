@@ -7,7 +7,7 @@ module Fastlane
         root_folder_id = params[:root_folder_id]
         app_folder_id = find_or_create_folder(root_folder_id, params[:app_name], drive_keyfile)
         version_folder_id = find_or_create_folder(app_folder_id, params[:version_name], drive_keyfile)
-        build_folder_id = find_or_create_folder(version_folder_id, params[:build_number], drive_keyfile)
+        build_folder_id = find_or_create_folder(version_folder_id, "#{params[:build_number]}", drive_keyfile)
 
         upload_to_google_drive(
           drive_keyfile: drive_keyfile,
@@ -89,6 +89,7 @@ module Fastlane
             key: :build_number,
             env_name: 'FL_RELEASE_TO_GOOGLE_DRIVE_BUILD_NUMBER',
             description: 'Build number',
+            type: Integer,
             optional: false,
           ),
         ]
