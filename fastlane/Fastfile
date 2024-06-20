@@ -332,7 +332,7 @@ lane :test_keys do |options|
     # Google Play Credentials -------------------------------------------------
     if !skip_android
         begin
-            google_play_track_version_codes
+            validate_play_store_json_key
         rescue => exception
             UI.error exception
             UI.abort_with_message! 'Google Play Credentials test failed'
