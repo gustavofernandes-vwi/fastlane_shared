@@ -222,7 +222,7 @@ private_lane :google_drive_upload do |options|
     app_name = ENV.fetch('APP_NAME')
     version = Actions.lane_context['LAST_BUILD_VERSION_NAME']
     build = Actions.lane_context['LAST_BUILD_NUMBER']
-    drive_keyfile = './fastlane/keys/google_drive_alpha.json'
+    drive_keyfile = './fastlane/keys/google_drive.json'
 
     release_to_google_drive(
         drive_keyfile: drive_keyfile,
