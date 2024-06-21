@@ -29,12 +29,14 @@ module Fastlane
         if lane_context[SharedValues::GDRIVE_FILE_ID]
           subfolder_id = lane_context[SharedValues::GDRIVE_FILE_ID]
         else
+          sleep(4)
           Actions::CreateGoogleDriveFolderAction.run(
             drive_keyfile: drive_keyfile,
             service_account: false,
             parent_folder_id: parend_id,
             folder_title: folder_name
           )
+          sleep(4)
           subfolder_id = lane_context[SharedValues::GDRIVE_FILE_ID]
         end
         subfolder_id
