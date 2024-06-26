@@ -382,7 +382,11 @@ platform :all do
 
         if !skip_build
             make_changelog(flavor: 'beta')
-            check_changelogs(options)
+            check_changelogs(
+                skip_ios: skip_ios,
+                skip_android: skip_android,
+                skip_github: skip_github,
+            )
         end
         ensure_release_branch
 
@@ -460,7 +464,11 @@ platform :all do
         )
 
         make_changelog(flavor: 'prod')
-        check_changelogs(options)
+        check_changelogs(
+            skip_ios: skip_ios,
+            skip_android: skip_android,
+            skip_github: skip_github,
+        )
         ensure_release_branch
 
         if !skip_ios
