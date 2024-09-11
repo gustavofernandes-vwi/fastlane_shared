@@ -624,7 +624,7 @@ platform :ios do
             distribute_external: true,
             distribute_only: true,
             app_version: version_name,
-            build_number: version_code,
+            build_number: "#{version_code}",
             app_identifier: package_name,
             groups: ['Vivaweb'],
             api_key_path: 'fastlane/keys/app-store-key.json',
@@ -711,7 +711,7 @@ platform :ios do
         Actions.lane_context['LAST_BUILD_NUMBER'] = version_code
         pilot(
             app_version: version_name,
-            build_number: version_code,
+            build_number: "#{version_code}",
             changelog: 'Sem informações sobre essa versão no momento',
             api_key_path: 'fastlane/keys/app-store-key.json',
         )
