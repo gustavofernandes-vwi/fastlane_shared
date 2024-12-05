@@ -608,6 +608,7 @@ platform :ios do
             skip_waiting_for_build_processing: true,
             api_key_path: 'fastlane/keys/app-store-key.json',
             changelog: (File.read(Actions.lane_context['CHANGELOG_IOS_FILE'].sub! './fastlane/', '') rescue ""),
+            beta_app_description: ENV.fetch('APP_NAME'),
         )
     end
 
@@ -628,6 +629,7 @@ platform :ios do
             app_identifier: package_name,
             groups: ['Vivaweb'],
             api_key_path: 'fastlane/keys/app-store-key.json',
+            beta_app_description: ENV.fetch('APP_NAME'),
         )
     end
 
@@ -714,6 +716,7 @@ platform :ios do
             build_number: "#{version_code}",
             changelog: 'Sem informações sobre essa versão no momento',
             api_key_path: 'fastlane/keys/app-store-key.json',
+            beta_app_description: ENV.fetch('APP_NAME'),
         )
     end
 
@@ -731,6 +734,7 @@ platform :ios do
             app_identifier: package_name,
             groups: ['Devs'],
             api_key_path: 'fastlane/keys/app-store-key.json',
+            beta_app_description: ENV.fetch('APP_NAME'),
         )
     end
 
