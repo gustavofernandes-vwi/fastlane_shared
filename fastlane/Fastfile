@@ -601,6 +601,7 @@ platform :ios do
             export_method: "app-store",
             export_xcargs: "-allowProvisioningUpdates",
         )
+        temporary_fix_ios_post_build
         Actions.lane_context['LAST_BUILD_VERSION_NAME'] = Actions.lane_context['FLUTTER_VERSION_NAME']
         Actions.lane_context['LAST_BUILD_NUMBER'] = Actions.lane_context['FLUTTER_VERSION_CODE']
         pilot(
@@ -647,6 +648,7 @@ platform :ios do
             export_method: "app-store",
             export_xcargs: "-allowProvisioningUpdates",
         )
+        temporary_fix_ios_post_build
         changelog_path = Actions.lane_context['CHANGELOG_IOS_FILE'].sub! './fastlane/', ''
         FileUtils.mkdir_p "metadata/ios/deliver/pt-BR"
         FileUtils.copy_file changelog_path, "metadata/ios/deliver/pt-BR/release_notes.txt"
@@ -708,6 +710,7 @@ platform :ios do
             export_method: "app-store",
             export_xcargs: "-allowProvisioningUpdates",
         )
+        temporary_fix_ios_post_build
         # enable_automatic_code_signing(path: 'ios/Runner.xcodeproj')
         Actions.lane_context['LAST_BUILD_VERSION_NAME'] = version_name
         Actions.lane_context['LAST_BUILD_NUMBER'] = version_code
@@ -760,6 +763,14 @@ platform :ios do
                 output_path: 'fastlane/keys/',
             )
         end
+    end
+
+    desc "Temporary workaround to remove unwanted files from the IPA"
+    private_lane :temporary_fix_ios_post_build do
+      # Workaround to remove ._Symbols from ipa.
+      ipa_location = lane_context[SharedValues::IPA_OUTPUT_PATH]
+      sh("unzip -l #{ipa_location} | grep ._Symbols || true")
+      sh("zip -d #{ipa_location} ._Symbols/ || true")
     end
 end
 
