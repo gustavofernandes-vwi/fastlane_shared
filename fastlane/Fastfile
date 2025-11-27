@@ -37,7 +37,7 @@ lane :make_changelog do |options|
     load_env(flavor: flavor)
     version_name = Actions.lane_context['FLUTTER_VERSION_NAME']
     version_code = Actions.lane_context['FLUTTER_VERSION_CODE']
-    download_notion_notes
+    # download_notion_notes
     changelog_maker(
         version: version_name,
         build: version_code,
@@ -51,7 +51,7 @@ lane :make_changelog do |options|
             "github" => 'fastlane/metadata/github/changelog.md',
             "android" => 'fastlane/metadata/android/pt-BR/changelogs/default.txt',
         },
-        extra_data: File.read('metadata/notion/changelog.md'),
+        # extra_data: File.read('metadata/notion/changelog.md'),
     )
 end
 
